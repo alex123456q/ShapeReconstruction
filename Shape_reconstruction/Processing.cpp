@@ -165,11 +165,11 @@ bool intersect (Point p1, Point q1, Point p2, Point q2, Point& res) {
     m.c = -m.a*p1.X - m.b*p1.Y;
     n.a = p2.Y - q2.Y;
     n.b = q2.X - p2.X;
-    n.c = -m.a*p2.X - m.b*p2.Y;
+    n.c = -n.a*p2.X - n.b*p2.Y;
     double zn = -det (m.a, m.b, n.a, n.b);
     if (fabs (zn) < 0.000001)
         return false;
-    res = Point( int(det (m.c, m.b, n.c, n.b) / zn),  int(det (m.a, m.c, n.a, n.c) / zn));
+    res = Point( (det (m.c, m.b, n.c, n.b) / zn),  (det (m.a, m.c, n.a, n.c) / zn));
     //if (res.x() < 0 || res.y() < 0)
     //    return false;
     return true;
@@ -287,48 +287,97 @@ void PaintSkeletBones(TPolFigure*skeleton,std::vector<std::vector<double>>& imag
         Bone = Bone->getNext();
     }
 }
-
-void findClosestBone(TPolFigure* skeleton, int i, int j, int x, int y, double& d3, double& f, std::vector<std::vector<double>>& imageF)
+void findClosestBone(TPolFigure* skeleton, int i, int j, double x, double y, double& x2, double& y2, double& d3, double& f, std::vector<std::vector<double>>& imageF)
 {
     TBone* bone = skeleton->Components->first()->Bones->first();
     double curd, d1, d2;
-    d3 = 1000000;
+    d3 = 10000000;
     Point res;
+    x2= y2 = 0;
     while (bone){
         bool b = intersect(Point(x, y), Point(i, j),
                   Point((bone->dest->Disc->X),(bone->dest->Disc->Y)) ,
                   Point((bone->org->Disc->X), (bone->org->Disc->Y)) , res);
-        if (!b){
+        if (!b || res.Y < 0 || res.Y >= imageF[0].size() || res.X < 0 || res.X >= imageF.size()){
             bone = bone->getNext();
             continue;
         }
         if (Classify(&Point(bone->dest->Disc->X,bone->dest->Disc->Y), 
-            &Point(bone->org->Disc->X, bone->org->Disc->Y), &res) != Between){
-            bone = bone->getNext();
-            continue;
-        }
-        if (res.Y < 0 || res.Y >= imageF[0].size() || res.X < 0 || res.X >= imageF.size()){
+            &Point(bone->org->Disc->X, bone->org->Disc->Y), &res) != Between
+            && Classify(&Point(bone->dest->Disc->X,bone->dest->Disc->Y), 
+            &Point(bone->org->Disc->X, bone->org->Disc->Y), &res) != Origin
+            && Classify(&Point(bone->dest->Disc->X,bone->dest->Disc->Y), 
+            &Point(bone->org->Disc->X, bone->org->Disc->Y), &res) != Destination){
+                //std::cout << "bone " << Classify(&Point(bone->dest->Disc->X,bone->dest->Disc->Y), 
+               //     &Point(bone->org->Disc->X, bone->org->Disc->Y), &res);
             bone = bone->getNext();
             continue;
         }
         curd = DistPoint(&Point(res.X, res.Y), &Point(i, j));
         if (curd < d3){
             d3 = curd;
-            if (imageF[res.X][res.Y] > -1){
-                f = imageF[res.X][res.Y];
+            x2 = res.X;
+            y2 = res.Y;
+            if (imageF[int(res.X)][int(res.Y)] > -0.5){
+                f = imageF[int(res.X)][int(res.Y)];
                 bone = bone->getNext();
                 continue;
             }
             d1 = DistPoint(&Point(res.X, res.Y), &Point(bone->dest->Disc->X,bone->dest->Disc->Y));//&bone->dest);
             d2 = DistPoint(&Point(res.X, res.Y), &Point(bone->org->Disc->X, bone->org->Disc->Y));//&bone->org);
             f = bone->dest->f * (d2/(d1+d2)) + bone->org->f * (d1/(d1+d2));
-            imageF[res.X][res.Y] = f;
+            imageF[int(res.X)][int(res.Y)] = f;
         }
         bone = bone->getNext();
     }
 }
+void PaintLine(std::vector<std::vector<double>>& imageF, Point* Node, Point*nextNode, double color);
+void PaintBorders(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF){
+    Point* p = skeleton->Components->first()->Border->ListPoints->first();
+    while (p){    
+        Point* Node = p;
+        Point* nextNode = p->getNextLooped();//GetNextNode(Node);
+        PaintLine(imageF, Node, nextNode, 1);
+        p = p->getNext();
+    }
+}
 
-void findClosestBorder(TPolFigure* skeleton, int i, int j, int&x, int&y, double& d1, double& f)
+void PaintLine(std::vector<std::vector<double>>& imageF, Point* Node, Point*nextNode, double color){
+        line m;
+        m.a = Node->Y - nextNode->Y;
+        m.b = nextNode->X - Node->X;
+        m.c = -m.a*Node->X - m.b*Node->Y;
+        double d1, d2;
+        if (fabs(m.b) > fabs(m.a)){
+            for (int x = min(Node->X, nextNode->X); x < max(Node->X, nextNode->X); ++x){
+                int y = (-m.a*x-m.c)/m.b;
+                if (m.b == 0)
+                    y = Node->Y;
+                imageF[x][y] =  color ;
+            }
+        } else {
+            for (int y = min(Node->Y, nextNode->Y); y < max(Node->Y, nextNode->Y); ++y){
+                int x = (-m.b*y-m.c)/m.a;
+                if (m.a == 0)
+                    x = Node->X;
+                imageF[x][y] =  color;
+            }
+        }
+}
+
+
+void PaintInnerBorders(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF){
+    Point* p = skeleton->Components->first()->HoleList[0]->ListPoints->first();
+    while (p){    
+        Point* Node = p;
+        Point* nextNode = p->getNextLooped();//GetNextNode(Node);
+        PaintLine(imageF, Node, nextNode, 1);
+        p = p->getNext();
+    }
+}
+
+
+void findClosestBorder(TPolFigure* skeleton, int i, int j, double&x, double&y, double& d1, double& f, std::vector<std::vector<double>>& imageF)
 {
     //skeleton->Components->first()->Border->Elements[i]->isVertex;//listelements
     //skeleton->Components->first()->Border->Elements[i]->Cont->ListPoints;//external
@@ -338,12 +387,23 @@ void findClosestBorder(TPolFigure* skeleton, int i, int j, int&x, int&y, double&
     double curd;
     d1 = 1000000;
     while (p){
+        curd = DistPoint(p, &Point(i, j));
+        if (curd < d1){
+            d1 = curd;
+            x = p->X;
+            y = p->Y;
+            f = 0;
+            imageF[int(x)][int(y)] = 0;
+        }
         Point pt_to = get_perpendicular_pt_from_pt_to_line(
                     *p,
                     *(p->getNextLooped()),
                     Point(i, j));
-        if (Classify(p, p->getNextLooped(), &pt_to) != Between){
+        if (Classify(p, p->getNextLooped(), &pt_to) != Between
+            && Classify(p, p->getNextLooped(), &pt_to) != Origin
+            && Classify(p, p->getNextLooped(), &pt_to) != Destination){
             p = p->getNext();
+            std::cout << Classify(p, p->getNextLooped(), &pt_to);
             continue;
         }
         curd = DistPoint(&pt_to, &Point(i, j));
@@ -352,16 +412,27 @@ void findClosestBorder(TPolFigure* skeleton, int i, int j, int&x, int&y, double&
             x = pt_to.X;
             y = pt_to.Y;
             f = 0;
+            imageF[int(x)][int(y)] = 0;
         }
         p = p->getNext();
     }
     p = skeleton->Components->first()->HoleList[0]->ListPoints->first();
     while (p){
+        curd = DistPoint(p, &Point(i, j));
+        if (curd < d1){
+            d1 = curd;
+            x = p->X;
+            y = p->Y;
+            f = 1;
+            imageF[int(x)][int(y)] = 1;
+        }
         Point pt_to = get_perpendicular_pt_from_pt_to_line(
             *p,
             *(p->getNextLooped()),
             Point(i, j));
-        if (Classify(p, p->getNextLooped(), &pt_to) != Between){
+        if ((Classify(p, p->getNextLooped(), &pt_to) != Between
+            && Classify(p, p->getNextLooped(), &pt_to) != Origin
+            && Classify(p, p->getNextLooped(), &pt_to) != Destination)){
             p = p->getNext();
             continue;
         }
@@ -373,6 +444,7 @@ void findClosestBorder(TPolFigure* skeleton, int i, int j, int&x, int&y, double&
             x = pt_to.X;
             y = pt_to.Y;
             f = 1;
+            imageF[int(x)][int(y)] = 1;
         }
         p = p->getNext();
     }
@@ -392,227 +464,43 @@ void Processing::selectPivot(int px, int py){
     }
 
     PaintSkeletBones(skeleton, imageF);
-
+    //PaintBorders(skeleton, imageF);
+    //PaintInnerBorders(skeleton, imageF);
     double d1, d2, h1, h2;
-    int x, y;
+    double x, y;
     CImage newimage;
-    newimage.Create(500, 500, 32);
-    for (int i = 0; i < image.GetWidth(); ++i)
-        for (int j = 0; j < image.GetHeight(); ++j)
-            if (!srcimg->getBit(i, j))
-                newimage.SetPixel(i, j,
-                    RGB(255, 255, 255));
-            else 
-                newimage.SetPixel(i, j,
-                RGB(0, 0, 0));
-            
-    newimage.Save(_T("D:\\My documents\\Shape_reconstruction\\data\\before_cur_out.png"), Gdiplus::ImageFormatPNG);
-//for inner points
-    for (int i = 0; i < image.GetWidth(); ++i)
+    for (int i = 0; i < image.GetWidth(); i+=1)
         for (int j = 0; j < image.GetHeight(); ++j){
             if (!srcimg->getBit(i, j)){
-                newimage.SetPixel(i, j,
-                    RGB(255, 255, 255));
+                imageF[i][j] = 1;
+            }
+            if (imageF[i][j] > -0.5)
+                continue;
+            findClosestBorder(skeleton, i, j, x, y, d1, h1, imageF);
+            if (i == x && y == j){
+                imageF[i][j] = h1;
                 continue;
             }
-            if (imageF[i][j] >= 0){
-                newimage.SetPixel(i, j, RGB(imageF[i][j], imageF[i][j], imageF[i][j]));
-                continue;
-            } else {
-                //newimage.SetPixel(i, j, RGB(255, 255, 255));
-                //continue;
-            }
-            findClosestBorder(skeleton, i, j, x, y, d1, h1);
-            findClosestBone(skeleton, i, j, x, y, d2, h2, imageF);
+            double x2, y2;
+            findClosestBone(skeleton, i, j, x, y, x2, y2, d2, h2, imageF);
+            //PaintLine(imageF, &Point(x, y), &Point(i, j), 1);
+            //PaintLine(imageF, &Point(x2, y2), &Point(i, j), 1);
+
             //d1 = DistPoint(QPoint(i, j), QPoint(x, y));
             //d2 = DistPoint(QPoint(i, j), QPoint(x2, y2));
-            int val = 255*(h1*(d2/(d1+d2)) + h2*(d1/(d1+d2)));
-            //tmp
-            newimage.SetPixel(i, j,
-                              RGB(val, val, val));
-            //image.pixel(i, j) = /*im[i,j] =*/
+            imageF[i][j] = h1*(d2/(d1+d2)) + h2*(d1/(d1+d2));
         }
-//    for (int i = 0; i < image.width(); ++i)
-//        for (int j = image.height()/2; j < image.height(); ++j){
-//            newimage.setPixel(QPoint(i, j), qRgb(0, 0, 0));
-
-  //      }
+    newimage.Create(500, 500, 32);
+    for (int i = 0; i < image.GetWidth(); ++i)
+        for (int j = 0; j < image.GetHeight(); ++j){
+            if (imageF[i][j] < -0.5){
+                imageF[i][j] = 0;
+            }
+            int val = imageF[i][j]*255;
+                newimage.SetPixel(i, j,
+                    RGB(val, val, val));
+            }
     newimage.Save(_T("D:\\My documents\\Shape_reconstruction\\data\\after_cur_out.png"), Gdiplus::ImageFormatPNG );
     newimage.Destroy();
 
-    //skeleton->Boundary->
-    //skeleton->Components->first()->Border->Elements[i]->isVertex;//listelements
-    //skeleton->Components->first()->Border->Elements[i]->Cont->ListPoints;//external
-    //skeleton->Components->first()->HoleList;//internal
-    //curmin2, f2;//l r
-    //for bones
-    //intersect(perp_on_border, current_point, bone.dist, bone.origin, res);
-    //curmin3 = DistPoint(res,current_point);
-    //f3 = current_point.f; // h1 * (d2/(d1+d2)) + h2 * (d1/(d1+d2)) hh - dist org
-    //f =  h1 * (d2/(d1+d2)) + h2 * (d1/(d1+d2));
 }
-
-
-/*
-void MoveSkeletW::paintEvent(QPaintEvent *)
-{
-    QPainter painter(this);
-
-//    QImage mainImage(500, 300, 32);
-//    mainImage.fill(qRgb(255, 255, 255));
-//    painter.drawImage(0, 0, mainImage);
-    path = QPainterPath();
-    path.setFillRule(Qt::WindingFill);
-    //painter.fillRect(0, 0, image.width(), image.height(), Qt::white);
-    painter.drawImage(0, 0, image);
-    //repaint( image.hasAlphaBuffer() );
-    //QLabel myLabel;
-    //myLabel.setPixmap(QPixmap::fromImage(myImage));
-    //myLabel.show();
-    image.save("cur_out.png");
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    if (skeleton == NULL) {
-        return;
-    }
-    //calloc()
-
-    //memcpy(skeletonPaint, skeleton, sizeof(skeleton));
-    //skeletonPaint->CutSkeleton(1);
-    //skeleton->CutSkeleton(1);
-
-    TPolFigure *skeletonPaint(skeleton);// = (TPolFigure *)malloc(sizeof(skeleton));//->copy();
-    QPolygonF contour;
-        painter.setPen(Qt::NoPen);//QPen(Qt::blue, 0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
-        TContour* S = skeletonPaint->Boundary->first();
-
-        while (S != NULL) {
-            int cornersCount = S->ListPoints->cardinal();
-            TPoint** points = new TPoint*[cornersCount];
-            int i = 0;
-            TPoint* Corn = S->ListPoints->first();
-            while (Corn != NULL)
-            {
-                points[i++] = Corn;
-                Corn = Corn->getNext();
-            }
-            for (int j = 0; j < cornersCount - 1; j++) {
-                contour << QPointF(points[j]->X, points[j]->Y) << QPointF(points[j + 1]->X, points[j + 1]->Y);
-         //c       painter.drawLine(points[j]->X, points[j]->Y, points[j + 1]->X, points[j + 1]->Y);
-       //         painter.setPen(QPen(Qt::blue, 4.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-      //          painter.drawPoint(points[j]->X, points[j]->Y); ///
-         //c       painter.setPen(QPen(Qt::blue, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
-            }
-            contour << QPointF(points[cornersCount - 1]->X, points[cornersCount - 1]->Y) << QPointF(points[0]->X, points[0]->Y);
-
-        //c    painter.drawLine(points[cornersCount - 1]->X, points[cornersCount - 1]->Y, points[0]->X, points[0]->Y);
-
-            delete points;
-            S = S->getNext();
-        }
-    path.addPolygon(contour);
-  //c
-    painter.setPen(QPen(Qt::blue, 0.5, Qt::SolidLine, Qt::RoundCap,
-                        Qt::MiterJoin));
-
-   // painter.setPen(QPen(Qt::green, 1, Qt::DotLine, Qt::RoundCap,
-  //                      Qt::MiterJoin));
-    //painter.setBrush(Qt::NoBrush);
-    painter.setBrush(QBrush(Qt::green, Qt::SolidPattern)); //Qt::TransparentMode Qt::SolidPattern Qt::NoBrush  Dense1Pattern
-    painter.drawPath(path);
-    if (!curRot.empty()){
- //c
- //       path.addEllipse(QPointF(curRot[0]->Disc->X,
- //                               curRot[0]->Disc->Y),
- //                               curRot[0]->Disc->Rad, curRot[0]->Disc->Rad);
-       painter.drawEllipse(QPointF(curRot[0]->Disc->X,
-                           curRot[0]->Disc->Y),
-               curRot[0]->Disc->Rad, curRot[0]->Disc->Rad);
-        painter.drawEllipse(QPointF(curRot[1]->Disc->X,
-                            curRot[1]->Disc->Y),
-                curRot[1]->Disc->Rad, curRot[1]->Disc->Rad);
-   }
-   if (tmpCorn){
-        painter.setPen(QPen(Qt::magenta, 10, Qt::SolidLine, Qt::RoundCap,
-                            Qt::MiterJoin));
-        painter.drawPoint(tmpCorn->X, tmpCorn->Y);
-    }
-   // рисуем скелеты
-   TConnected* Com = skeletonPaint->Components->first();
-   bool drawBones = 1;
-   bool drawCircles = 0;
-   while (Com != NULL) {
-       painter.setPen(QPen(Qt::red, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
-       if (drawBones) {
-           TBone* Bone = Com->Bones->first();
-           while (Bone != NULL) {
-               if (Bone->fake != 1){
-                   painter.setPen(QPen(Qt::red, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-               painter.drawLine(
-                   Bone->org->Disc->X,
-                   Bone->org->Disc->Y,
-                   Bone->dest->Disc->X,
-                   Bone->dest->Disc->Y
-               );} else {
-                   //painter.setPen(QPen(Qt::blue, 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-                  // painter.drawLine(
-                  //     Bone->org->Disc->X,
-                  //     Bone->org->Disc->Y,
-                 //      Bone->dest->Disc->X,
-                 //      Bone->dest->Disc->Y
-                 //  );
-               }
-
-               Bone = Bone->getNext();
-           }
-       }
-
-       painter.setPen(QPen(Qt::green, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
-       if (drawCircles) {
-           TNode* Node = Com->Nodes->first();
-
-           while (Node != NULL) {
-               painter.drawEllipse(Node->X() + 1 - Node->r(),
-                   Node->Y() + 1 - Node->r(),
-                   2 * Node->r(),
-                   2 * Node->r());
-
-               Node = Node->getNext();
-           }
-       }
-
-       Com = Com->getNext();
-   }
-   painter.setPen(QPen(Qt::red, 8, Qt::SolidLine, Qt::RoundCap,
-                       Qt::MiterJoin));
-   if (curNode){
-//      painter.drawPoint(curNode->Disc->X, curNode->Disc->Y);
-  //    painter.drawPoint(curNode->Bones[tmp]->GetNextNode(curNode)->Disc->X,
-  //                      curNode->Bones[tmp]->GetNextNode(curNode)->Disc->Y);
-   }
-//   for (int i = 0; i < vertices.size(); ++i){
-//       painter.drawPoint(vertices[i]->Disc->X, vertices[i]->Disc->Y);
-       //painter.drawLine(vertices[i]->Disc->X, vertices[i]->Disc->Y, );
-//   }
-   //painter.setPen(QPen(Qt::black, 8, Qt::SolidLine, Qt::RoundCap,
-    //                   Qt::MiterJoin));
-   //for (int i = 0; i < circPoint.size(); ++i){
-   //   painter.drawPoint(circPoint[i].X, circPoint[i].Y);
-       //painter.drawLine(circPoint[i].X, circPoint[i].Y
-   //}
-   //painter.end();
-   painter.setPen(QPen(Qt::magenta, 10, Qt::SolidLine, Qt::RoundCap,
-                       Qt::MiterJoin));
-   if (endPoint){
-       painter.drawPoint(endPoint->Disc->X, endPoint->Disc->Y);
-       painter.setPen(QPen(Qt::black, 8, Qt::SolidLine, Qt::RoundCap,
-                           Qt::MiterJoin));
-       painter.drawPoint(endPointst->Disc->X, endPointst->Disc->Y);
-       painter.drawPoint(tmpCorn->X, tmpCorn->Y);
-   }
-}
-*/

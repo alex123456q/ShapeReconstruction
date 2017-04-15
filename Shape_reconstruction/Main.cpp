@@ -1,5 +1,6 @@
 #include "atlimage.h"
 #include "Processing.h"
+bool intersect (Point p1, Point q1, Point p2, Point q2, Point& res);
 int main(int argc, char *argv[]) {
     //static HBITMAP bmpSource = NULL;
     CImage source;
@@ -17,7 +18,8 @@ int main(int argc, char *argv[]) {
     ///::BitBlt(imageHDC, 0, 0, 100, 100, bmpSource, 0, 0, SRCCOPY);
     //cimage.Save(L"c:\\test\\fileName.jpg", GUID_NULL);
     //cimage.ReleaseDC();
-
+    //Point *res;
+    //intersect(&Point(), &Point(), &Point(), &Point(), res);
     Processing* pr = new Processing(source);
     pr->selectPivot(0, 0);
     source.Destroy();
