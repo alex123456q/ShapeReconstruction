@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
     //CImage sm_img;
     //bmpSource = (HBITMAP)LoadImage(NULL, "D:\\Shape_reconstruction\\build-untitled1-QT4_8_6-Debug\\cur_out.png", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     //source = (CImage)(bmpSource);
-    source.Load("D:\\My documents\\Shape_reconstruction\\data\\input.png");
+    source.Load("D:\\My documents\\Shape_reconstruction\\data\\input2.png");
     //HANDLE hBitMap = ::LoadImage(0, "c:\\mybmp.bmp",IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     //CBitmap bmp;
     //bmp.Attach((HBITMAP)hBitMap); 
