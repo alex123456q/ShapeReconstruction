@@ -253,11 +253,55 @@ void SetInnerPoints(TPolFigure* skeleton, std::vector<std::vector<double>>& imag
         Node = Node->getNext();
     }
 }
+
+void FindParabolaPoint(TBone* bone, int x, int y, Point& res){
+        int p = 0;
+        bool fl = false;
+        for (p = 0; p < 3/*bone->org->Kind()*/; ++p){
+            if (!bone->org->Sites[p]->isVertex)
+                continue;
+            for (int z = 0; z < 3/*bone->dest->Kind()*/; ++z)
+                if (bone->org->Sites[p] == bone->dest->Sites[z]){
+                    fl = true;
+                    break;
+                }
+                if (fl)
+                    break;
+        }
+        Vertex* n = (Vertex*)bone->org->Sites[p];
+        fl = false;
+        for (p = 0; p < 3/*bone->org->Kind()*/; ++p){
+            if (bone->org->Sites[p]->isVertex)
+                continue;
+            for (int z = 0; z < 3/*bone->dest->Kind()*/; ++z)
+                if (bone->org->Sites[p] == bone->dest->Sites[z]){
+                    fl = true;
+                    break;
+                }
+                if (fl)
+                    break;
+        }
+        double xnew=100000000;
+        bool bbad = false;
+        Point pp = get_perpendicular_pt_from_pt_to_line(
+            Point ( ((Edge*)bone->org->Sites[p])->org->X, ((Edge*)bone->org->Sites[p])->org->Y ), 
+            Point ( ((Edge*)bone->org->Sites[p])->dest->X, ((Edge*)bone->org->Sites[p])->dest->Y ),
+            *n->p);
+        Point pp2 = get_perpendicular_pt_from_pt_to_line(
+            Point ( ((Edge*)bone->org->Sites[p])->org->X, ((Edge*)bone->org->Sites[p])->org->Y ), 
+            Point ( ((Edge*)bone->org->Sites[p])->dest->X, ((Edge*)bone->org->Sites[p])->dest->Y ),
+            Point(x,y));
+        double a =  ( pow(pp.X - pp2.X, 2) + pow(pp.Y - pp2.Y, 2) ); 
+        double b =  ( pow(pp.X - n->p->X, 2) + pow(pp.Y - n->p->Y, 2) ); 
+        xnew = (a + b)/ (2*sqrt(b));//-d1;
+        double d1 = DistPoint(&pp, n->p);
+        res.X = pp2.X+(-pp.X+n->p->X)*(xnew/d1); 
+        res.Y =  pp2.Y+(-pp.Y+n->p->Y)*(xnew/d1);
+}
+
 void PaintSkeletBones(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF){
     //TNode * Node = skeleton->Components->first()->Nodes->first();
     TBone* Bone = skeleton->Components->first()->Bones->first();
-    //int count_bones = sizeof(Node->Bones)/sizeof(Node->Bones[0]);
-    //for (int i = 0; i < count_bones; ++i){
     while (Bone){    
         //TBone* Bone = Node->Bones[i];
         TNode* Node = Bone->dest;
@@ -266,52 +310,34 @@ void PaintSkeletBones(TPolFigure*skeleton,std::vector<std::vector<double>>& imag
         m.a = Node->Y() - nextNode->Y();
         m.b = nextNode->X() - Node->X();
         m.c = -m.a*Node->X() - m.b*Node->Y();
-        double p;
-        if (Bone->Virt){
-            //if (Node->Y()-Bone->Virt->Y != 0)
-            //    p = pow(Node->X()-Bone->Virt->X, 2)/ /*fabs*/(2*(Node->Y()-Bone->Virt->Y));
-            //else
-            //    p = pow(nextNode->X()-Bone->Virt->X, 2)/ /*fabs*/(2*(nextNode->Y()-Bone->Virt->Y));
-
-            //m.a = ( Node->Y() - nextNode->Y() ) / ( pow( Node->X(), 2) - pow(nextNode->X(), 2 )-2*(Bone->Virt->X)*(Node->X() - nextNode->X()));
-            //m.b = -2*m.a*Bone->Virt->X;
-            //m.c = -(m.a* pow(Node->X(), 2) + m.b*Node->X() - Node->Y());
-            imageF[int(Bone->Virt->X)][int(Bone->Virt->Y)] = 1;
-        }
         double d1, d2;
-        if (fabs(m.b) > fabs(m.a) || Bone->Virt){
+        Point res;
+        if (fabs(m.b) > fabs(m.a)){
             for (int x = min(Node->X(), nextNode->X()); x < max(Node->X(), nextNode->X()); ++x){
-                double y;
-                if (Bone->Virt){
-//                     //y = Bone->Virt->Y+p*pow(x-Bone->Virt->X, 2); 
-//                     //if (y < 0 || y > imageF[0].size())
-//                     //    y = Bone->Virt->Y-p*pow(x-Bone->Virt->X, 2); 
-//                     y = m.a*pow(x, 2)+m.b*x+m.c;
-//                     if (!y || y < 0 || y > imageF[0].size())
-//                         continue;
-//                     d1 = DistPoint(&Point(x, y), &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
-//                     d2 = DistPoint(&Point(x, y), &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
-//                     imageF[x][y] =  Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;
-//                         //not circle! parabola
-//                         //intersect with circle if in circle between borders of bone
-                } else {
-                    y = (-m.a*x-m.c)/m.b;
-                    if (m.b == 0)
-                        y = Node->Y();
-                    d1 = DistPoint(&Point(x, y), &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
-                    d2 = DistPoint(&Point(x, y), &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
-                    imageF[x][y] =  Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;
-                }
-                
+                int y;
+                y = (-m.a*x-m.c)/m.b;
+                if (m.b == 0)
+                    y = Node->Y();
+                res.X = x;
+                res.Y = y;
+                if (Bone->Virt)
+                    FindParabolaPoint(Bone, x, y, res);
+                d1 = DistPoint(&res, &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
+                d2 = DistPoint(&res, &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
+                imageF[res.X][res.Y] =  Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;                
             }
         } else {
             for (int y = min(Node->Y(), nextNode->Y()); y < max(Node->Y(), nextNode->Y()); ++y){
                 int x = (-m.b*y-m.c)/m.a;
                 if (m.a == 0)
                     x = Node->X();
-                d1 = DistPoint(&Point(x, y), &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
-                d2 = DistPoint(&Point(x, y), &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
-                imageF[x][y] =  Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;
+                res.X = x;
+                res.Y = y;
+                if (Bone->Virt)
+                    FindParabolaPoint(Bone, x, y, res);
+                d1 = DistPoint(&res, &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
+                d2 = DistPoint(&res, &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
+                imageF[res.X][res.Y] =  Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;
             }
         }
         Bone = Bone->getNext();
@@ -324,6 +350,7 @@ void findClosestBone(TPolFigure* skeleton, int i, int j, double x, double y, dou
     d3 = 10000000;
     Point res;
     x2= y2 = 0;
+    TBone* closestbone = bone;
     while (bone){
         bool b = intersect(Point(x, y), Point(i, j),
                   Point((bone->dest->Disc->X),(bone->dest->Disc->Y)) ,
@@ -343,74 +370,12 @@ void findClosestBone(TPolFigure* skeleton, int i, int j, double x, double y, dou
             bone = bone->getNext();
             continue;
         }
-        if (bone->Virt){
-            //parabola
-            d1 = DistPoint(&Point(x, y), &Point(i, j));//&bone->dest)
-            int p = 0;
-            bool fl = false;
-            for (p = 0; p < bone->org->Kind(); ++p){
-                if (!bone->org->Sites[p]->isVertex)
-                    continue;
-                for (int z = 0; z < bone->dest->Kind(); ++z)
-                    if (bone->org->Sites[p] == bone->dest->Sites[z]){
-                        fl = true;
-                        break;
-                    }
-                if (fl)
-                    break;
-            }
-//             while (!bone->org->Sites[p]->isVertex)
-//                 ++p;
-            Vertex* n = (Vertex*)bone->org->Sites[p];
-            //bool f = false;
-            //std::vector<int> ppoints;
-            fl = false;
-            for (p = 0; p < 3/*bone->org->Kind()*/; ++p){
-                if (bone->org->Sites[p]->isVertex)
-                    continue;
-                for (int z = 0; z < 3/*bone->dest->Kind()*/; ++z)
-                    if (bone->org->Sites[p] == bone->dest->Sites[z]){
-                        fl = true;
-                        break;
-                    }
-                if (fl)
-                    break;
-            }
-            double xnew=100000000;
-            bool bbad = false;
-            Point pp = get_perpendicular_pt_from_pt_to_line(
-                Point ( ((Edge*)bone->org->Sites[p])->org->X, ((Edge*)bone->org->Sites[p])->org->Y ), 
-                Point ( ((Edge*)bone->org->Sites[p])->dest->X, ((Edge*)bone->org->Sites[p])->dest->Y ),
-                *n->p);
-            if ( (fabs(x-i)<1e-2 && fabs(pp.X - n->p->X)>1e-2 ||
-                fabs(x-i)>1e-2 && fabs(pp.X - n->p->X)<1e-2 ||
-                fabs(y-j)<1e-2 && fabs(pp.Y-n->p->Y)>1e-2 || 
-                fabs(y-j)>1e-2 && fabs(pp.Y-n->p->Y)<1e-2 ||
-                fabs(fabs( (pp.X - n->p->X)/ (x - i) ) -  fabs( (pp.Y - n->p->Y)/ (y - j) )) > 1e-1 ) ){ //(Collinear())
-                bone = bone->getNext();
-                continue;
-            }
-            double a =  ( pow(pp.X - x, 2) + pow(pp.Y - y, 2) ); 
-            double b =  ( pow(pp.X - n->p->X, 2) + pow(pp.Y - n->p->Y, 2) ); 
-            xnew = (a + b)/ (2*sqrt(b));//-d1;
-            if ((x+(i-x)*(xnew/d1) < 0 || x+(i-x)*(xnew/d1) >= 499 || y+(j-y)*(xnew/d1) < 0 || y+(j-y)*(xnew/d1) >= imageF[0].size())){
-                bone = bone->getNext();
-                continue;
-            }
-            res.X = x+(i-x)*(xnew/d1); 
-            res.Y=  y+(j-y)*(xnew/d1);
-
-            //TDisc* d = (TDisc*)bone->org->Sites[p];
-            //d->Rad
-            //n->p->X, n->p->Y
-            //bone->Virt
-            //if Point(i,j) in parabola
-        }
         curd = DistPoint(&Point(res.X, res.Y), &Point(i, j));
         if (curd < d3){
             d3 = curd;
             x2 = res.X;
             y2 = res.Y;
+            closestbone = bone;
             if (imageF[int(res.X)][int(res.Y)] > -0.5){
                 f = imageF[int(res.X)][int(res.Y)];
                 bone = bone->getNext();
@@ -419,10 +384,68 @@ void findClosestBone(TPolFigure* skeleton, int i, int j, double x, double y, dou
             d1 = DistPoint(&Point(res.X, res.Y), &Point(bone->dest->Disc->X,bone->dest->Disc->Y));//&bone->dest);
             d2 = DistPoint(&Point(res.X, res.Y), &Point(bone->org->Disc->X, bone->org->Disc->Y));//&bone->org);
             f = bone->dest->f * (d2/(d1+d2)) + bone->org->f * (d1/(d1+d2));
-            imageF[int(res.X)][int(res.Y)] = f;
+            //if (!bone->Virt)
+            //    imageF[int(res.X)][int(res.Y)] = f;
         }
         bone = bone->getNext();
     }
+    if (closestbone->Virt){
+        //parabola
+        bone = closestbone;
+//         d1 = DistPoint(&Point(x, y), &Point(i, j));//&bone->dest)
+//         int p = 0;
+//         bool fl = false;
+//         for (p = 0; p < bone->org->Kind(); ++p){
+//             if (!bone->org->Sites[p]->isVertex)
+//                 continue;
+//             for (int z = 0; z < bone->dest->Kind(); ++z)
+//                 if (bone->org->Sites[p] == bone->dest->Sites[z]){
+//                     fl = true;
+//                     break;
+//                 }
+//                 if (fl)
+//                     break;
+//         }
+//         //             while (!bone->org->Sites[p]->isVertex)
+//         //                 ++p;
+//         Vertex* n = (Vertex*)bone->org->Sites[p];
+//         //bool f = false;
+//         //std::vector<int> ppoints;
+//         fl = false;
+//         for (p = 0; p < 3/*bone->org->Kind()*/; ++p){
+//             if (bone->org->Sites[p]->isVertex)
+//                 continue;
+//             for (int z = 0; z < 3/*bone->dest->Kind()*/; ++z)
+//                 if (bone->org->Sites[p] == bone->dest->Sites[z]){
+//                     fl = true;
+//                     break;
+//                 }
+//                 if (fl)
+//                     break;
+//         }
+//         double xnew=100000000;
+//         bool bbad = false;
+//         Point pp = get_perpendicular_pt_from_pt_to_line(
+//             Point ( ((Edge*)bone->org->Sites[p])->org->X, ((Edge*)bone->org->Sites[p])->org->Y ), 
+//             Point ( ((Edge*)bone->org->Sites[p])->dest->X, ((Edge*)bone->org->Sites[p])->dest->Y ),
+//             *n->p);
+// 
+//         double a =  ( pow(pp.X - x, 2) + pow(pp.Y - y, 2) ); 
+//         double b =  ( pow(pp.X - n->p->X, 2) + pow(pp.Y - n->p->Y, 2) ); 
+//         xnew = (a + b)/ (2*sqrt(b));//-d1;
+// 
+//         res.X = x+(i-x)*(xnew/d1); 
+//         res.Y=  y+(j-y)*(xnew/d1);
+        FindParabolaPoint(closestbone, i, j, res);
+        d3 = DistPoint(&Point(res.X, res.Y), &Point(i, j));
+        d1 = DistPoint(&Point(res.X, res.Y), &Point(bone->dest->Disc->X,bone->dest->Disc->Y));//&bone->dest);
+        d2 = DistPoint(&Point(res.X, res.Y), &Point(bone->org->Disc->X, bone->org->Disc->Y));//&bone->org);
+        f = bone->dest->f * (d2/(d1+d2)) + bone->org->f * (d1/(d1+d2));
+        //imageF[int(res.X)][int(res.Y)] = f;
+        x2 = res.X;
+        y2 = res.Y;
+    }
+
 }
 void PaintLine(std::vector<std::vector<double>>& imageF, Point* Node, Point*nextNode, double color);
 void PaintBorders(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF){
@@ -598,8 +621,8 @@ void Processing::selectPivot(int px, int py){
             //PaintLine(imageF, &Point(x, y), &Point(i, j), 1);
             //PaintLine(imageF, &Point(x2, y2), &Point(i, j), 1);
 
-            //d1 = DistPoint(QPoint(i, j), QPoint(x, y));
-            //d2 = DistPoint(QPoint(i, j), QPoint(x2, y2));
+            //d1 = DistPoint(&Point(i, j), &Point(x, y));
+            //d2 = DistPoint(&Point(i, j), &Point(x2, y2));
             imageF[i][j] = h1*(d2/(d1+d2)) + h2*(d1/(d1+d2));
         }
     //RePaintSkeletBones(skeleton, imageF);
