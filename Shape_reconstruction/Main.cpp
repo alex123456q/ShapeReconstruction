@@ -1,5 +1,6 @@
 #include "atlimage.h"
 #include "Processing.h"
+//#include "Reconstruct.cpp"
 bool intersect (Point p1, Point q1, Point p2, Point q2, Point& res);
 int main(int argc, char *argv[]) {
     //static HBITMAP bmpSource = NULL;
@@ -20,8 +21,10 @@ int main(int argc, char *argv[]) {
     //cimage.ReleaseDC();
     //Point *res;
     //intersect(&Point(), &Point(), &Point(), &Point(), res);
-    Processing* pr = new Processing(source);
-    pr->selectPivot(0, 0);
+    //Processing* pr = new Processing(source);
+    Reconstruct*rec = new Reconstruct(source);
+    rec->mainPart();
+    //pr->selectPivot(0, 0);
     source.Destroy();
     return 0;
 }

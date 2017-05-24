@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Processing.cpp" />
+    <ClCompile Include="Reconstruct.cpp" />
     <ClCompile Include="SkeletonDemoGUI\SkeletonLib\BSTrans.cpp" />
     <ClCompile Include="SkeletonDemoGUI\SkeletonLib\ContourTracer.cpp" />
     <ClCompile Include="SkeletonDemoGUI\SkeletonLib\Geometry.cpp" />
@@ -129,6 +130,8 @@
     <ClCompile Include="SkeletonDemoGUI\SkeletonLib\TriDel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="geom_utils.h" />
+    <ClInclude Include="paint_utils.h" />
     <ClInclude Include="Processing.h" />
     <ClInclude Include="SkeletonDemoGUI\SkeletonLib\BitRaster.h" />
     <ClInclude Include="SkeletonDemoGUI\SkeletonLib\BSTrans.h" />
