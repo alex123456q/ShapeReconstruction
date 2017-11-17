@@ -51,6 +51,12 @@
     <ClCompile Include="SkeletonDemoGUI\SkeletonLib\TriDel.cpp">
       <Filter>Файлы исходного кода\SkeletonLib</Filter>
     </ClCompile>
+    <ClCompile Include="Reconstruct.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="PaintOpenGL_GLUT.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Processing.h">
@@ -85,6 +91,12 @@
     </ClInclude>
     <ClInclude Include="SkeletonDemoGUI\SkeletonLib\TriDel.h">
       <Filter>Заголовочные файлы\SkeletonLib</Filter>
+    </ClInclude>
+    <ClInclude Include="geom_utils.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="paint_utils.h">
+      <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

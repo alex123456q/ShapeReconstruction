@@ -11,14 +11,21 @@ static Point get_perpendicular_pt_from_pt_to_line(
     Point& ptb,
     Point& pt_from){
         Point pt_to;
-        double b1 = pt_from.X * (pta.X - ptb.X) + pt_from.Y * (pta.Y - ptb.Y);
-        double b2 = pta.X * ptb.Y - pta.Y * ptb.X;
-        pt_to.Y = (pta.X - ptb.X) * (pta.X - ptb.X) + (pta.Y - ptb.Y) * (pta.Y - ptb.Y);
-        double det_k = b1 * (pta.X - ptb.X) - b2 * (pta.Y - ptb.Y);
+//         double b1 = pt_from.X * (pta.X - ptb.X) + pt_from.Y * (pta.Y - ptb.Y);
+//         double b2 = pta.X * ptb.Y - pta.Y * ptb.X;
+//         pt_to.Y = (pta.X - ptb.X) * (pta.X - ptb.X) + (pta.Y - ptb.Y) * (pta.Y - ptb.Y);
+//         double det_k = b1 * (pta.X - ptb.X) - b2 * (pta.Y - ptb.Y);
+// 
+//         pt_to.X = det_k/pt_to.Y;
+//         det_k = (pta.X - ptb.X) * b2 + (pta.Y - ptb.Y) * b1;
+//         pt_to.Y = det_k/pt_to.Y;
 
-        pt_to.X = det_k/pt_to.Y;
-        det_k = (pta.X - ptb.X) * b2 + (pta.Y - ptb.Y) * b1;
-        pt_to.Y = det_k/pt_to.Y;
+
+
+		double k = ((ptb.Y - pta.Y) * (pt_from.X - pta.X) - (ptb.X - pta.X) * (pt_from.Y - pta.Y)) / (pow((ptb.Y - pta.Y), 2) + pow((ptb.X - pta.X), 2));
+		pt_to.X = pt_from.X - k * (ptb.Y - pta.Y);
+		pt_to.Y = pt_from.Y + k * (ptb.X - pta.X);
+
         return pt_to;
 }
 

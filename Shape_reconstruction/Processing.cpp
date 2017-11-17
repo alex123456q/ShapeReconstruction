@@ -442,7 +442,7 @@ void Processing::selectPivot(int px, int py){
         Node = Node->getNext();
     }
 
-    PaintSkeletBones(skeleton, imageF);
+    PaintSkeletBones(skeleton, imageF, true);
     //PaintBorders(skeleton, imageF);
     //PaintInnerBorders(skeleton, imageF);
     double d1, d2, h1, h2;

@@ -7,6 +7,7 @@
 #include "SkeletonDemoGUI/SkeletonLib/BSTrans.h"
 #include "atlimage.h"
 #include <set>
+#include <unordered_set>
 class Processing
 {
 public:
@@ -69,13 +70,15 @@ struct one_point_compare {
         return (lhs.Y < rhs.Y);
     }
 };
+
 struct Cell{
-    int leftx, rightx, upy, downy;
+    double leftx, rightx, upy, downy;
     //vector<TBone> bones; 
     TNode* skeletnode;
     TBone* skeletbone;
     vector<Point> nodes;
-    set/*vector*/<std::pair<Point, Point>, point_compare> borders;
+    std::/*unordered_*//*set*/vector<std::pair<Point, Point>/*, point_compare*/> borders;
+	std::vector<std::pair<double, double> > borders_color;
     vector<Element*> cellels;
 
 //     bool operator< (const Cell& another){
@@ -85,17 +88,21 @@ struct Cell{
 class Reconstruct{
     TPolFigure *skeleton;
     BitRaster *srcimg;
+public:
     vector<vector<double> > imageF;
+private:
     //vector< vector <Cell> > cells; 
-    vector<Cell> cells; 
+//     vector<Cell> cells; 
     CImage image;
 public:
+	vector<Cell> cells;
     Reconstruct(CImage im);
     ~Reconstruct();
     void makeSkelet();
     void makeCells();
     int mainPart();
     void SetInnerPointsofSkelet();
+	void SetHeightforBorders(std::set<Point>& sPoints);
     void findClosestBorder(Cell& curcell, int i, int j, double&x, double&y, double& d1, double& f, std::vector<std::vector<double>>& imageF);
     void findClosestBone(Cell& curcell, int i, int j, double x, double y, double& x2, double& y2, double& d3, double& f, std::vector<std::vector<double>>& imageF);
 };
