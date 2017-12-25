@@ -2,133 +2,17 @@
 #include "Processing.h"
 #include "geom_utils.h"
 #include "paint_utils.h"
-// #include <boost/math/special_functions/round.hpp>
-
-// struct Cell{
-//     int leftx, rightx, upy, downy;
-//     //vector<TBone> bones; 
-//     TNode* skeletnode;
-//     TBone* skeletbone;
-//     vector<Point> nodes;
-//     vector<std::pair<Point, Point>> borders;
-//     vector<Element*> cellels;
-// 
-//     bool operator< (const Cell& another){
-//         return leftx < another.x;
-//     }
-// };
-
-// auto CompCells = [] (const Cell& e1, const Cell& e2)
-// {
-//     if (e1.rightx <= e2.leftx)
-//         return true;
-//     if (e1.leftx >= e2.rightx)
-//         return false;
-//     if (e1.downy >= e2.upy)
-//         return true;
-//     if (e1.upy <= e2.downy)
-//         return false;
-//     return (e1.leftx < e2.leftx);
-// };
 
 struct CellLessThan
 {
     bool operator() (const Cell& e1, const Cell& e2) const
     {
-//          if (e1.rightx < e2.leftx)
-//              return true;
-//          if (e1.leftx > e2.rightx)
-//              return false;
-// //          if (e1.downy > e2.upy)
-// //              return true;
-//          if (e1.upy < e2.downy)
-//              return true;
-
-        
-        //         if (e1.leftx == e2.leftx)
-//             return (e1.downy < e2.downy);
-//         return (e1.leftx < e2.leftx);
-
         if (e1.rightx == e2.rightx)
             return (e1.downy < e2.downy);
         return (e1.rightx < e2.rightx);  
     
     }
-//     bool operator() (const Point& e1, const Cell& e2) const
-//     {
-//         //         if (e1.rightx <= e2.leftx)
-//         //             return true;
-//         //         if (e1.leftx >= e2.rightx)
-//         //             return false;
-//         //         if (e1.downy >= e2.upy)
-//         //             return true;
-//         //         if (e1.upy <= e2.downy)
-//         //             return false;
-//         if (e1.X < e2.leftx)
-//             return true;
-//         if (e1.X > e2.rightx)
-//             return false;
-// //         if (e1.Y > e2.upy)
-// //             return false;
-//         return (e1.Y < e2.downy);
-// //         return (e1.leftx < e2.leftx);
-//     }
-//     bool operator() (const Cell& e1, const Point& e2) const
-//     {
-//         if (e2.X < e1.leftx)
-//             return false;
-//         if (e2.X > e1.rightx)
-//             return true;
-//         return (e2.Y > e1.upy);
-//     }
 } CellComp;
-
-
-// class Reconstruct{
-//     TPolFigure *skeleton;
-//     BitRaster *srcimg;
-//     vector<vector<double> > f;
-//     //vector< vector <Cell> > cells; 
-//     vector<Cell> cells; 
-//     CImage image;
-// public:
-//     Reconstruct(CImage im);
-//     ~Reconstruct();
-//     void makeSkelet();
-//     void makeCells();
-//     int mainPart();
-//     void SetInnerPointsofSkelet();
-// };
-
-// namespace std {
-// 
-//     template<class RandomIt, class T>
-//     RandomIt binary_locate(RandomIt first, RandomIt last, const T& val, ) {
-//         if(val == *first) return first;
-//         auto d = std::distance(first, last);  
-//         if(d==1) return first;
-//         auto center = (first + (d/2));
-//         if(val < *center) return binary_locate(first, center, val);
-//         return binary_locate(center, last, val);
-//     }  
-// 
-// }
-// int pnpoly(int npol, float * xp, float * yp, float x, float y)
-// {
-//     int c = 0;
-//     for (int i = 0, j = npol - 1; i < npol; j = i++) 
-//     {
-//         if ((
-//             (yp[i]<yp[j]) && (yp[i]<=y) && (y<=yp[j]) &&
-//             ((yp[j] - yp[i]) * (x - xp[i]) > (xp[j] - xp[i]) * (y - yp[i]))
-//             ) || (
-//             (yp[i]>yp[j]) && (yp[j]<=y) && (y<=yp[i]) &&
-//             ((yp[j] - yp[i]) * (x - xp[i]) < (xp[j] - xp[i]) * (y - yp[i]))
-//             ))
-//             c = !c;
-//     }
-//     return c;
-// }
 
 bool pointINcell(Cell& cell, Point& p)
 {
@@ -139,14 +23,7 @@ bool pointINcell(Cell& cell, Point& p)
     for (auto iterat = cell.borders.begin(); iterat != cell.borders.end(); ++iterat){
         Point firstp = iterat->first;
         Point secondp = /*cell.borders[i]*/iterat->second;
-// 		if (points.find(firstp) != points.end())
-// 			points.insert(secondp);
-// 		if (points.find(secondp) != points.end())
-// 			points.insert(firstp);
 
-// 		PlanePosition z = Classify(&firstp, &secondp, &p);
-// 		if (/*Collinear Codirect*/z == Between || z == Origin || z == Destination)
-// 			return true;
 		if (firstp.Y == secondp.Y)
 			continue;
         Point res;
@@ -164,62 +41,22 @@ bool pointINcell(Cell& cell, Point& p)
 				abs(res.X - firstp.X) < 1e-5 && abs(res.Y - firstp.Y) < 1e-5 && secondp.Y < firstp.Y){
 				continue;
 				}
-			//points.insert(res);
 
-
-//         if (firstp.X ==)
-//         if ( Classify(&firstp, &secondp, &p) == LEFT_POS && ((firstp.Y<p.Y)&&(p.Y<=secondp.Y)) ||
-//            Classify(&firstp, &secondp, &p) == RIGHT_POS && ((secondp.Y<p.Y)&&(p.Y<=firstp.Y)) )
-       // if ( (p.Y <= max(firstp.Y, secondp.Y) && p.Y >= min(firstp.Y, secondp.Y) )
             f = !f;
             }
-//         if (   (firstp.X - secondp.X)*(p.Y - secondp.Y) - (firstp.Y - secondp.Y)*(p.X - secondp.X) < 0 )
-//             f  = false;
         }
     }
 
-//     for (int i = 0; i < cell.borders.size(); ++i){
-//         Point firstp = cell.borders[i].first;
-//         Point secondp = cell.borders[i].second;
-//         if
-//         ((((firstp.Y<=p.Y) && (p.Y<secondp.Y)) || ((secondp.Y<=p.Y) && (p.Y<firstp.Y))) &&
-//             (p.X > (secondp.X - firstp.X) * (p.Y - firstp.Y) / (secondp.Y - firstp.Y) + firstp.X))
-//             c = !c;
-// //         if ((
-// //             (firstp.Y<secondp.Y) && (firstp.Y<=p.Y) && (p.Y<=secondp.Y) &&
-// //             ((secondp.Y - firstp.Y) * (p.X - firstp.X) >= (secondp.X - firstp.X) * (p.Y - firstp.Y))
-// //             ) || (
-// //             (firstp.Y>secondp.Y) && (secondp.Y<=p.Y) && (p.Y<=firstp.Y) &&
-// //             ((secondp.Y - firstp.Y) * (p.X - firstp.X) <= (secondp.X - firstp.X) * (p.Y - firstp.Y))
-// //             ))
-// //             c = !c;
-//     }
     return f;
 }
 
 bool FindCell(int x, int y, vector<Cell>& cells, Cell& outcell){
-//     Cell value;
-//     value.leftx = value.rightx = x;
-//     value.upy = value.downy = y;
     int idx = 0;
-//     std::pair<std::vector<Cell>::iterator,std::vector<Cell>::iterator> bounds;
-//     bounds=std::equal_range (cells.begin(), cells.end(), value/*Point(x,y)*/, CellComp);
-//     for (auto iterat = bounds.first; iterat != bounds.second; ++iterat){
-//         if (iterat->rightx >= x && iterat->leftx <= x && 
-//            iterat->upy >= y && iterat->downy <= y){
-//              idx = iterat - cells.begin();
-//              break;
-//        }
-//     }
-    //long idx = (std::lower_bound(cells.begin(), cells.end(), Point(x, y), CellComp) - cells.begin());
-    //if (idx > 0)
-    //    --idx
+
     while (cells[idx].rightx < x)
         ++idx;
 	for (int i = idx; i < cells.size(); ++i)
-        if (pointINcell(cells[i], Point(x, y))){//
-           // (cells[i].rightx >= x && cells[i].leftx <= x && 
-          //  cells[i].upy >= y && cells[i].downy <= y){
+        if (pointINcell(cells[i], Point(x, y))){
             idx = i;
             break;
 		}
@@ -228,16 +65,10 @@ bool FindCell(int x, int y, vector<Cell>& cells, Cell& outcell){
 		return false;
     outcell = cells[idx];
 	return true;
-    //std::binary_search(cells.begin(), cells.end(), value, CompCells());
 }
 
-void Reconstruct::makeCells(){
-    //TNode * Node = skeleton->Components->first()->Nodes->first();
-    TBone* Bone = skeleton->Components->first()->Bones->first();
-// 	for (int z = 0; z < 65; ++z)
-// 		Bone = Bone->getNext();
-// 	Node_compare::hash_ = 0;
-// 	Point_hash::hash_ = 0;
+void Reconstruct::makeCells(TConnected* Component){
+    TBone* Bone = Component->Bones->first();
     while (Bone){
         Cell newcell = Cell();
         newcell.skeletbone = Bone;
@@ -272,16 +103,7 @@ void Reconstruct::makeCells(){
 //                             break;
 						
                         Point pp2 = get_perpendicular_pt_from_pt_to_line( *edge->dest, *edge->org, Point(orgnode->X(), orgnode->Y()));
-//                         if (pp2.X == orgnode->X() && pp2.Y == orgnode->Y())
-//                             break;
-// 						if (abs(int(std::floor(pp1.X + 0.5)) - pp1.X) < 1e-3)
-// 							pp1.X = int(std::floor(pp1.X + 0.5));
-// 						if (abs(int(std::floor(pp2.X + 0.5)) - pp2.X) < 1e-3)
-// 							pp2.X = int(std::floor(pp2.X + 0.5));
-// 						if (pp1.X == pp2.X && pp1.Y == pp2.Y)
-// 							continue;
-						//newcell.nodes.push_back(Point(destnode->X(), destnode->Y()));
-						//newcell.nodes.push_back(Point(orgnode->X(), orgnode->Y()));
+
 						newcell.nodes.push_back(pp1);
                         newcell.nodes.push_back(pp2);
                         //if ( edge->WestDirect() )
@@ -356,46 +178,50 @@ void Reconstruct::makeSkelet(){
         }
     }
 
-    BondSkeletTrans(srcimg, 0, 0/*10*//*100*/, skeleton);
+    BondSkeletTrans(srcimg, 0, 10/*10*//*100*/, skeleton);
     //skeleton->CutSkeleton(1);
     //skeleton->setFakeKind();
     //skeleton->fakeCutSkeleton(1);
     //this->update();
 }
 
-void Reconstruct::SetHeightforBorders(std::set<Point>& sPoints) {
+void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, int firstH_, int secondH_) {
 
-	Point * Node = skeleton->Components->first()->Border->ListPoints->first();//->Nodes->first();
-	Element* el = skeleton->Components->first()->Border->Elements[0];
+	firstH = firstH_;
+	secondH = secondH_;
+	//Point * Node = skeleton->Components->first()->Border->ListPoints->first();//->Nodes->first();
+	Element* el = Component->Border->Elements[0];
 	while (el) {
 
-		el->f = 0;
-		/*if (el->isVertex) {
+		//el->f = firstH;
+		if (el->isVertex) {
 			Point p = *((Vertex*)el)->p;
 			if (sPoints.find(p) != sPoints.end())
-				el->f = 0.0;
+				el->f = firstH;
 			else
-				el->f = 1.0;
-			imageF[p.X][p.Y] = el->f;
-		}*/
+				el->f = secondH;
+			//imageF[p.X][p.Y] = el->f;
+		}
 		el = el->getNext();
 	}
-	el = skeleton->Components->first()->HoleList[0]->Elements[0];//skeleton->Components->first()->Border->Elements[1];
+
+
+	el = Component->Border->Elements[1];
 	while (el) {
 
-		el->f = 1;
-		/*if (el->isVertex) {
+		if (el->isVertex) {
 			el = el->getNext();
 			continue;
 		}
-		el->f = max(el->getNextLooped()->f, el->getPrevLooped()->f);
-		double f = el->f;
-		std::cout << " " << f;
-		PaintLine(imageF, ((Edge*)el)->org, ((Edge*)el)->dest, el->f);
-		Element* prevel = el->getPrevLooped();
-		  //imageF[((Vertex*)prevel)->p->X][((Vertex*)prevel)->p->Y] = prevel->f;
-		prevel = el->getNextLooped();
-		  //imageF[((Vertex*)prevel)->p->X][((Vertex*)prevel)->p->Y] = prevel->f;*/
+		el->f = /*max*/min(el->getNextLooped()->f, el->getPrevLooped()->f);
+		el = el->getNext();
+	}
+
+	if (Component->HoleList.size() > 0)
+		el = Component->HoleList[0]->Elements[0];//skeleton->Components->first()->Border->Elements[1];
+	while (el) {
+
+		el->f = secondH;
 		el = el->getNext();
 	}
 }
@@ -417,22 +243,22 @@ Reconstruct::~Reconstruct()
 {
 }
 
-void Reconstruct::SetInnerPointsofSkelet(){//(TPolFigure* skeleton, std::vector<std::vector<double>>& imageF){
-    TNode * Node = skeleton->Components->first()->Nodes->first();
+void Reconstruct::SetInnerPointsofSkelet(TConnected* Component){//(TPolFigure* skeleton, std::vector<std::vector<double>>& imageF){
+    TNode * Node = Component->Nodes->first();
     while (Node){
         int sumint = 0;
         int sumnotint = 0;
         for (int i = 0; i < 3/*Node->Kind()*/; ++i){
 			if (!Node->Sites[i])
 				break;
-            if ( Node->Sites[i]->f == 1/*Cont->Internal*/ ){
+            if ( Node->Sites[i]->f == firstH/*Cont->Internal*/ ){
                 sumint++;
             } else {
                 sumnotint++;
             }
         }
-        int l = 0;
-        int r = 1;
+        int l = firstH;
+        int r = secondH;
         if (sumint != 0 && sumnotint != 0){//(sumint != 0 && sumnotint != 0){//(sumint%2 == 1){
             Node->f = (l+r)/2.0;
             imageF[Node->Disc->X][Node->Disc->Y] = Node->f;
@@ -520,21 +346,25 @@ void Reconstruct::findClosestBone(Cell& curcell, int i, int j, double x, double 
     
 
 int Reconstruct::mainPart(){
-    //TConnected* Com = skeleton->Components->first();
-    SetInnerPointsofSkelet();   //SetInnerPoints(skeleton, imageF);
-    //set outer points
-    TNode * Node = skeleton->Components->first()->Nodes->first();
-    while (Node){
-        SetOuterPointsofSkelet(Node, imageF);
-        Node = Node->getNext();
-    }
-    //////////////////////////////////////////////////////////////////////////
-	//PaintSkeletBones(skeleton, imageF, false);
-	//PaintBorders(skeleton, imageF);//, std::set<Point>());
-    //PaintInnerBorders(skeleton, imageF);
+    TConnected* Com = skeleton->Components->first();
+	while (Com)
+	{
+		SetInnerPointsofSkelet(Com);   //SetInnerPoints(skeleton, imageF);
+		//set outer points
+		TNode * Node = Com->Nodes->first();
+		while (Node) {
+			SetOuterPointsofSkelet(Node, imageF);
+			Node = Node->getNext();
+		}
+		//////////////////////////////////////////////////////////////////////////
+		//PaintSkeletBones(skeleton, imageF, false);
+		//PaintBorders(skeleton, imageF);//, std::set<Point>());
+		//PaintInnerBorders(skeleton, imageF);
 
-    makeCells();
-    sort(cells.begin(), cells.end(), CellComp); //cellcompare()
+		makeCells(Com);
+		Com = Com->getNext();
+	}
+   /* sort(cells.begin(), cells.end(), CellComp); //cellcompare()
      double d1, d2, h1, h2;
      double x, y;
  	std::cout << image.GetWidth() << " " << image.GetHeight();
@@ -565,7 +395,7 @@ int Reconstruct::mainPart(){
              //d1 = DistPoint(&Point(i, j), &Point(x, y));
              //d2 = DistPoint(&Point(i, j), &Point(x2, y2));
              imageF[i][j] = h1*(d2/(d1+d2)) + h2*(d1/(d1+d2));
-         }
+         }*/
 //         //RePaintSkeletBones(skeleton, imageF);
 
 //     PaintInFile(imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\after_cur_out.png"));

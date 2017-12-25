@@ -4,17 +4,17 @@
 #include "paint_utils.h"
 #include "Processing.h"
 
-std::vector<std::vector<double>> imagetopaint;
-std::vector<Cell> cellstopaint;
+//std::vector<std::vector<double>> imagetopaint;
+std::vector<std::vector<Cell>> cellstopaint;
 // float angle = 0.0f;
 // float lx = 0, ly = 0;
 // угол поворота камеры
 float angle = -0.0133;// 0.0;
 // координаты вектора направления движения камеры
 float lx = 0.0133/*0*/ , lz = -1/*-1*/;
-float scaleValue = 0.56f;//0.15f;
+float scaleValue = 0.36f;//0.46f;//0.56f;//0.15f;
 // XZ позиция камеры
-float x = 50.0f, z = 225.0f;
+float x = 40.0f, z = 205.0f;
 //Ключи статуса камеры. Переменные инициализируются нулевыми значениями
 //когда клавиши не нажаты
 float deltaAngle = 0.0f;
@@ -172,7 +172,7 @@ void initGL() {
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
 }
 
-void RenderingHeightMapLines(std::vector<Cell>& cells, std::vector<std::vector<double>> imageF)
+void RenderingHeightMapLines(std::vector<std::vector<Cell>>& allcells/*, std::vector<std::vector<double>> imageF*/)
 {
 // 	glBegin(GL_QUADS);
 // 	glColor3f(0.3f, 0.3f, 1.0f);
@@ -185,30 +185,32 @@ void RenderingHeightMapLines(std::vector<Cell>& cells, std::vector<std::vector<d
 // 	glBegin(GL_LINES); // Линии
 // 	glColor3f(1.0f, 1.0f, 1.0f);
 // 	glColor3f(1.0f, 1.0f, 1.0f);
-	for (int i = 0; i < cells.size(); ++i) {
-		glColor3f(1.0f, 1.0f, 1.0f);
-		//auto cellborder = cells[i].bordersNodes.begin();
-		//std::cout << " border size : " << cells[i].bordersNodes.size() <<  " " << cells[i].borders.size() << std::endl;
-		int j = 0;
-		for (auto bord = cells[i].borders.begin(); bord != cells[i].borders.end(); ++bord) {
+	for (int k = 0; k < allcells.size(); ++k){
+		for (int i = 0; i < allcells[k].size(); ++i) {
+			glColor3f(1.0f, 1.0f, 1.0f);
+			//auto cellborder = cells[i].bordersNodes.begin();
+			//std::cout << " border size : " << cells[i].bordersNodes.size() <<  " " << cells[i].borders.size() << std::endl;
+			int j = 0;
+			for (auto bord = allcells[k][i].borders.begin(); bord != allcells[k][i].borders.end(); ++bord) {
+				glBegin(GL_LINES); // Линии
+				glColor3f(1.0f, 1.0f, 1.0f);
+				//if (fabs(imageF[int(bord->first.X)][int(bord->first.Y)]) <1e-3)
+				//	glColor3f(1.0f, 0.7f, 0.7f);
+				glVertex3f(bord->first.X, allcells[k][i].borders_color[j].first * 7 /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
+				glColor3f(1.0f, 1.0f, 1.0f);
+				//if (fabs(imageF[int(bord->second.X)][int(bord->second.Y)]) <1e-3)
+				//	glColor3f(1.0f, 0.7f, 0.7f);
+				glVertex3f(bord->second.X, allcells[k][i].borders_color[j].second * 7/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
+				glEnd();;
+				++j;
+				//++cellborder;
+			}
+			glColor3f(0.7f, 1.0f, 0.7f);
 			glBegin(GL_LINES); // Линии
-			glColor3f(1.0f, 1.0f, 1.0f);
-			if (fabs(imageF[int(bord->first.X)][int(bord->first.Y)]) <1e-3)
-				glColor3f(1.0f, 0.7f, 0.7f);
-			glVertex3f(bord->first.X, cells[i].borders_color[j].first*7 /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
-			glColor3f(1.0f, 1.0f, 1.0f);
-			if (fabs(imageF[int(bord->second.X)][int(bord->second.Y)]) <1e-3)
-				glColor3f(1.0f, 0.7f, 0.7f);
-			glVertex3f(bord->second.X, cells[i].borders_color[j].second*7/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
-			glEnd();;
-			++j;
-			//++cellborder;
+			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * 7, allcells[k][i].skeletbone->dest->Y());
+			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * 7, allcells[k][i].skeletbone->org->Y());
+			glEnd();
 		}
-		glColor3f(0.7f, 1.0f, 0.7f);
-		glBegin(GL_LINES); // Линии
-		glVertex3f(cells[i].skeletbone->dest->X() ,cells[i].skeletbone->dest->f * 7, cells[i].skeletbone->dest->Y());
-		glVertex3f(cells[i].skeletbone->org->X(), cells[i].skeletbone->org->f * 7, cells[i].skeletbone->org->Y());
-		glEnd();
 // 		for (int j = 0; j < cells[i].nodes.size()+1; ++j) {
 // 			double x = cells[i].nodes[j%cells[i].nodes.size()].X;
 // 			double y = cells[i].nodes[j%cells[i].nodes.size()].Y;
@@ -328,14 +330,14 @@ void display() {
 	 //gluLookAt(50, 8, 225, 51, 2, 150, 0, 1, 0);  // Определяет вид и положение камеры
 
 
-	gluLookAt(x, 8.0f, z,
-		x + lx*75, 1.0f, z + lz*75,
+	gluLookAt(x, 5.0f, z,                    //0.8 1
+		x + lx*75, 10.0f, z + lz*75,
 		0.0f, 1.0f, 0.0f);
 
     glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);
 	
 	//RenderHeightMap(imagetopaint);        // Визализация карты высот
-	RenderingHeightMapLines(cellstopaint, imagetopaint);
+	RenderingHeightMapLines(cellstopaint/*, imagetopaint*/);
 
 	glutSwapBuffers();  // Swap the front and back frame buffers (double buffering)
 }
@@ -437,9 +439,9 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
 }
 
 /* Main function: GLUT runs as a console application starting at main() */
-int main2(int argc, char** argv, std::vector<std::vector<double>> imageF, std::vector<Cell>& cvec) {
+int main2(int argc, char** argv/*, std::vector<std::vector<double>> imageF*/, std::vector<std::vector<Cell>>& cvec) {
 
-	imagetopaint = imageF;
+	//imagetopaint = imageF;
 	cellstopaint = cvec;
 // 	for (int i = 0; i < imagetopaint.size(); ++i)
 // 		for (int j = 0; j < imagetopaint[0].size(); ++j)

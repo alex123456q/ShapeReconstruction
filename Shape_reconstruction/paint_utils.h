@@ -130,4 +130,4 @@ static void PaintInFile(/*CImage& image, */vector<vector<double> >& imageF, /*st
         newimage.Destroy();
 }
 
-int main2(int argc, char** argv, std::vector<std::vector<double>> imageF, std::vector<Cell>& cvec);
+int main2(int argc, char** argv,/* std::vector<std::vector<double>> imageF,*/ std::vector<std::vector<Cell>>& cvec);

@@ -86,10 +86,12 @@ struct Cell{
 //     }
 };
 class Reconstruct{
+public:
     TPolFigure *skeleton;
     BitRaster *srcimg;
 public:
     vector<vector<double> > imageF;
+	int firstH, secondH;
 private:
     //vector< vector <Cell> > cells; 
 //     vector<Cell> cells; 
@@ -99,10 +101,10 @@ public:
     Reconstruct(CImage im);
     ~Reconstruct();
     void makeSkelet();
-    void makeCells();
+    void makeCells(TConnected* Component);
     int mainPart();
-    void SetInnerPointsofSkelet();
-	void SetHeightforBorders(std::set<Point>& sPoints);
+    void SetInnerPointsofSkelet(TConnected* Component);
+	void SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, int firstH, int secondH);
     void findClosestBorder(Cell& curcell, int i, int j, double&x, double&y, double& d1, double& f, std::vector<std::vector<double>>& imageF);
     void findClosestBone(Cell& curcell, int i, int j, double x, double y, double& x2, double& y2, double& d3, double& f, std::vector<std::vector<double>>& imageF);
 };
