@@ -67,72 +67,69 @@ bool FindCell(int x, int y, vector<Cell>& cells, Cell& outcell){
 	return true;
 }
 
-void Reconstruct::makeCells(TConnected* Component){
+void Reconstruct::addVerticalCells(TConnected* Component, int color1, int color2){
     TBone* Bone = Component->Bones->first();
     while (Bone){
         Cell newcell = Cell();
         newcell.skeletbone = Bone;
         TNode* orgnode = Bone->org;
         TNode* destnode = Bone->dest;
+
+		destnode->f = orgnode->f = (color1 + color2) / 2;
+		
 		bool found = false;
+		std::vector<int> bothsites;
         for (int i = 0; i < 3; ++i){
             if (!orgnode->Sites[i])
                 break;
             for (int j = 0; j < 3; ++j){
-                if (destnode->Sites[j] == orgnode->Sites[i]){
+				if (destnode->Sites[j] == orgnode->Sites[i]) {
+					bothsites.push_back(j);
 					found = true;
-                    if (destnode->Sites[j]->isVertex){
-                        newcell.nodes.push_back(*((Vertex*)orgnode->Sites[i])->p);
-                        Point pp1 = *((Vertex*)orgnode->Sites[i])->p;
-                        newcell.borders./*insert*/push_back(std::pair<Point, Point>(pp1,Point(orgnode->X(), orgnode->Y())));
-						newcell.borders_color.push_back(std::pair<double, double>(orgnode->Sites[i]->f, orgnode->f));
-                        newcell.borders.push_back/*insert*/(std::pair<Point, Point>(pp1,Point(destnode->X(), destnode->Y())));
-						//newcell.borders_color.push_back(orgnode->Sites[i]->f);
-						newcell.borders_color.push_back(std::pair<double, double>(orgnode->Sites[i]->f, destnode->f));
-
-// 						newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(orgnode->Sites[i], orgnode));
-// 						newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(orgnode->Sites[i], orgnode));
-
-						newcell.cellels.push_back(orgnode->Sites[i]);
-//                         PaintLine(imageF, &pp1, &Point(orgnode->X(), orgnode->Y()), 1);
-//                         PaintLine(imageF, &pp1, &Point(destnode->X(), destnode->Y()), 1);
-                    } else {
-                        Edge* edge = (Edge*)destnode->Sites[j];
-                        Point pp1 = get_perpendicular_pt_from_pt_to_line( *edge->dest, *edge->org, Point(destnode->X(), destnode->Y()));
-//                         if (pp1.X == destnode->X() && pp1.Y == destnode->Y())
-//                             break;
-						
-                        Point pp2 = get_perpendicular_pt_from_pt_to_line( *edge->dest, *edge->org, Point(orgnode->X(), orgnode->Y()));
-
-						newcell.nodes.push_back(pp1);
-                        newcell.nodes.push_back(pp2);
-                        //if ( edge->WestDirect() )
-                        
-						newcell.borders.push_back/*insert*/(std::pair<Point, Point>(pp1,pp2));
-                        newcell.borders.push_back/*insert*/(std::pair<Point, Point>(pp2,Point(orgnode->X(), orgnode->Y())));
-                        newcell.borders.push_back(std::pair<Point, Point>(pp1,Point(destnode->X(), destnode->Y())));
-						
-
-						newcell.borders_color.push_back(std::pair<double, double>(edge->f, edge->f));
-						newcell.borders_color.push_back(std::pair<double, double>(edge->f, orgnode->f));
-						newcell.borders_color.push_back(std::pair<double, double>(edge->f, destnode->f));
-
-						//newcell.bordersNodes.insert(std::pair<TSite*, TNode*>((TSite*)destnode, orgnode));
-						//newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(destnode->Sites[j], orgnode));
-						//newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(destnode->Sites[j], destnode));
-
-                        newcell.cellels.push_back(destnode->Sites[j]);
-// 						PaintLine(imageF, &pp1, &pp2, 1);
-// 						PaintLine(imageF,  edge->dest, edge->org, 1);
-// 						PaintLine(imageF, &pp2, &Point(orgnode->X(), orgnode->Y()), 1);
-// 						PaintLine(imageF, &pp1, &Point(destnode->X(), destnode->Y()), 1);
-                    }
-                    break;
-                 }
+					break;
+				}
 // 				if (newcell.borders.size() > 5)
 // 					break;
             }
         }
+		int color = color1;
+		for (int i = 0; i < bothsites.size(); ++i) {
+			if (orgnode->Sites[bothsites[i]]->isVertex) {
+				newcell.nodes.push_back(*((Vertex*)orgnode->Sites[bothsites[i]])->p);
+
+				Point pp1 = *((Vertex*)orgnode->Sites[bothsites[i]])->p;
+				newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(orgnode->X(), orgnode->Y())));
+				newcell.borders_color.push_back(std::pair<double, double>(color, orgnode->f));
+
+				newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+				newcell.borders_color.push_back(std::pair<double, double>(color, destnode->f));
+
+				newcell.cellels.push_back(orgnode->Sites[i]);
+			}
+			else {
+				Edge* edge = (Edge*)orgnode->Sites[bothsites[i]];
+				Point pp1 = Point(destnode->X(), destnode->Y());//get_perpendicular_pt_from_pt_to_line( *edge->dest, *edge->org, Point(destnode->X(), destnode->Y()));		
+				Point pp2 = Point(orgnode->X(), orgnode->Y());//get_perpendicular_pt_from_pt_to_line( *edge->dest, *edge->org, Point(orgnode->X(), orgnode->Y()));
+
+				newcell.nodes.push_back(pp1);
+				newcell.nodes.push_back(pp2);
+
+				newcell.borders.push_back(std::pair<Point, Point>(pp1, pp2));
+				newcell.borders.push_back(std::pair<Point, Point>(pp2, Point(orgnode->X(), orgnode->Y())));
+				newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+
+
+				newcell.borders_color.push_back(std::pair<double, double>(color, color));
+				newcell.borders_color.push_back(std::pair<double, double>(color, orgnode->f));
+				newcell.borders_color.push_back(std::pair<double, double>(color, destnode->f));
+
+				newcell.cellels.push_back(orgnode->Sites[bothsites[i]]);
+			}
+			color = color2;
+		}
+
+
+
         newcell.leftx = min(destnode->X(), orgnode->X());
         newcell.rightx = max(destnode->X(), orgnode->X());
         newcell.downy = min(destnode->Y(), orgnode->Y());
@@ -157,8 +154,155 @@ void Reconstruct::makeCells(TConnected* Component){
     }
 }
 
-void Reconstruct::makeSkelet(){
-    srcimg = new BitRaster(image.GetWidth(), image.GetHeight());
+void Reconstruct::makeCells(TConnected* Component) {
+	TBone* Bone = Component->Bones->first();
+	while (Bone) {
+		Cell newcell = Cell();
+		newcell.skeletbone = Bone;
+		TNode* orgnode = Bone->org;
+		TNode* destnode = Bone->dest;
+		bool found = false;
+		for (int i = 0; i < 3; ++i) {
+			if (!orgnode->Sites[i])
+				break;
+			if (orgnode->f == 0)
+				std::cout << "0";
+			for (int j = 0; j < 3; ++j) {
+				if (destnode->Sites[j] == orgnode->Sites[i]) {
+					found = true;
+					if (destnode->Sites[j]->isVertex) {						
+						Point pp1 = *((Vertex*)orgnode->Sites[i])->p;
+
+
+						/*if (orgnode->Sites[i]->f == (firstH+secondH)/2.0)
+						{
+							std::cout << "ovk " << orgnode->f << std::endl;
+
+							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(orgnode->X(), orgnode->Y())));
+							newcell.borders_color.push_back(std::pair<double, double>(firstH, orgnode->f));
+
+							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+							newcell.borders_color.push_back(std::pair<double, double>(firstH, destnode->f));
+
+							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(orgnode->X(), orgnode->Y())));
+							newcell.borders_color.push_back(std::pair<double, double>(secondH, orgnode->f));
+
+							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+							newcell.borders_color.push_back(std::pair<double, double>(secondH, destnode->f));
+
+
+							break;
+						}*/
+
+						newcell.nodes.push_back(pp1);
+						newcell.borders./*insert*/push_back(std::pair<Point, Point>(pp1, Point(orgnode->X(), orgnode->Y())));
+						newcell.borders_color.push_back(std::pair<double, double>(orgnode->Sites[i]->f, orgnode->f));
+						newcell.borders.push_back/*insert*/(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+						//newcell.borders_color.push_back(orgnode->Sites[i]->f);
+						newcell.borders_color.push_back(std::pair<double, double>(orgnode->Sites[i]->f, destnode->f));
+
+						// 						newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(orgnode->Sites[i], orgnode));
+						// 						newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(orgnode->Sites[i], orgnode));
+
+						newcell.cellels.push_back(orgnode->Sites[i]);
+						//                         PaintLine(imageF, &pp1, &Point(orgnode->X(), orgnode->Y()), 1);
+						//                         PaintLine(imageF, &pp1, &Point(destnode->X(), destnode->Y()), 1);
+					}
+					else {
+						Edge* edge = (Edge*)destnode->Sites[j];
+						
+						Point pp1 = get_perpendicular_pt_from_pt_to_line(*edge->dest, *edge->org, Point(destnode->X(), destnode->Y()));
+						//                         if (pp1.X == destnode->X() && pp1.Y == destnode->Y())
+						//                             break;
+
+						Point pp2 = get_perpendicular_pt_from_pt_to_line(*edge->dest, *edge->org, Point(orgnode->X(), orgnode->Y()));
+
+						newcell.nodes.push_back(pp1);
+						newcell.nodes.push_back(pp2);
+						//if ( edge->WestDirect() )
+
+						newcell.borders.push_back/*insert*/(std::pair<Point, Point>(pp1, pp2));
+						newcell.borders.push_back/*insert*/(std::pair<Point, Point>(pp2, Point(orgnode->X(), orgnode->Y())));
+						newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+
+
+
+						/*if (edge->f == (firstH+secondH)/2)
+						{
+							//std::cout << "ok";
+							
+							if (edge->dest->X == destnode->X() && edge->dest->Y == destnode->Y() || edge->dest->X == orgnode->X() && edge->dest->Y == orgnode->Y())
+							{
+								std::cout << "yed";
+								destnode->f = 0.5;
+								orgnode->f = 0.5; //one of them
+								edge->f = edge->getPrevLooped()->f;// orgnode->f;
+							}
+
+							if (edge->org->X == orgnode->X() && edge->org->Y == orgnode->Y() || edge->org->X == destnode->X() && edge->org->Y == destnode->Y())
+							{
+								std::cout << "yeo";
+								orgnode->f = 0.5;
+								destnode->f = 0.5;
+								edge->f = edge->getNextLooped()->f;
+							}
+							newcell.borders_color.push_back(std::pair<double, double>(edge->f, edge->f));
+							newcell.borders_color.push_back(std::pair<double, double>(edge->f, orgnode->f));
+							newcell.borders_color.push_back(std::pair<double, double>(edge->f, destnode->f));
+						}
+						else*/
+						{
+							newcell.borders_color.push_back(std::pair<double, double>(edge->f, edge->f));
+							newcell.borders_color.push_back(std::pair<double, double>(edge->f, orgnode->f));
+							newcell.borders_color.push_back(std::pair<double, double>(edge->f, destnode->f));
+						}
+						
+
+
+						//newcell.bordersNodes.insert(std::pair<TSite*, TNode*>((TSite*)destnode, orgnode));
+						//newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(destnode->Sites[j], orgnode));
+						//newcell.bordersNodes.insert(std::pair<TSite*, TNode*>(destnode->Sites[j], destnode));
+
+						newcell.cellels.push_back(destnode->Sites[j]);
+						// 						PaintLine(imageF, &pp1, &pp2, 1);
+						// 						PaintLine(imageF,  edge->dest, edge->org, 1);
+						// 						PaintLine(imageF, &pp2, &Point(orgnode->X(), orgnode->Y()), 1);
+						// 						PaintLine(imageF, &pp1, &Point(destnode->X(), destnode->Y()), 1);
+					}
+					break;
+				}
+				// 				if (newcell.borders.size() > 5)
+				// 					break;
+			}
+			if (!found && orgnode->Sites[i]->f == 1e+3)
+				std::cout << "n";
+		}
+		newcell.leftx = min(destnode->X(), orgnode->X());
+		newcell.rightx = max(destnode->X(), orgnode->X());
+		newcell.downy = min(destnode->Y(), orgnode->Y());
+		newcell.upy = max(destnode->Y(), orgnode->Y());
+		for (int i = 0; i < newcell.nodes.size(); ++i) {
+			if (newcell.nodes[i].X < newcell.leftx)
+				newcell.leftx = newcell.nodes[i].X;
+			if (newcell.nodes[i].X > newcell.rightx)
+				newcell.rightx = newcell.nodes[i].X;
+			if (newcell.nodes[i].Y < newcell.downy)
+				newcell.downy = newcell.nodes[i].Y;
+			if (newcell.nodes[i].Y > newcell.upy)
+				newcell.upy = newcell.nodes[i].Y;
+			//PaintLine(imageF, &newcell.nodes[i], &newcell.nodes[(i+1)%newcell.nodes.size()], 1);
+		}
+
+		cells.push_back(newcell); //here we want a vector of vectors and insert with conditions
+		Bone = Bone->getNext();
+		//++z;
+		//if (z == 64)18
+		//		break;
+	}
+}
+
+void Reconstruct::makeSkelet(/*CImage image, TPolFigure* skelet*/){
+	BitRaster *srcimg = new BitRaster(image.GetWidth(), image.GetHeight());
     bool inverted = true/*false*//*true*/;
     for (int i = 0; i < image.GetHeight(); i++) {
         for(int j = 0; j < image.GetWidth(); j++) {
@@ -178,42 +322,101 @@ void Reconstruct::makeSkelet(){
         }
     }
 
-    BondSkeletTrans(srcimg, 0, 10/*10*//*100*/, skeleton);
-    //skeleton->CutSkeleton(1);
+	
+	skeleton = new TPolFigure(srcimg, 0);
+    //skeleton->MakeTriangDel();
+	//skeleton->CutSkeleton(0);
+
+     //BondSkeletTrans(srcimg, 0, 0/*10*//*100*/, skeleton);
+    
+	 //skeleton->CutSkeleton(1);
     //skeleton->setFakeKind();
     //skeleton->fakeCutSkeleton(1);
     //this->update();
 }
 
-void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, int firstH_, int secondH_) {
+void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, std::set<Point>& sPointsEdge, int firstH_, int secondH_) {
 
 	firstH = firstH_;
 	secondH = secondH_;
 	//Point * Node = skeleton->Components->first()->Border->ListPoints->first();//->Nodes->first();
 	Element* el = Component->Border->Elements[0];
+	std::vector<double> colors;
 	while (el) {
-
 		//el->f = firstH;
 		if (el->isVertex) {
-			Point p = *((Vertex*)el)->p;
-			if (sPoints.find(p) != sPoints.end())
-				el->f = firstH;
-			else
+			//*((Vertex*)el)->p;
+			//Point p = *((Vertex*)el)->p;
+			if (sPointsEdge.find(*((Vertex*)el)->p) != sPointsEdge.end())
+				el->f = secondH;//colors.push_back(secondH);//
+			else if (sPoints.find(*((Vertex*)el)->p) != sPoints.end())
+				el->f = firstH;//colors.push_back(firstH);//
+			else {
+				el->f = (secondH + firstH) / 2.0;//colors.push_back((secondH + firstH) / 2.0);//
+				pointsvert.push_back( ((Vertex*)el)->p );
+			}
+			/*if (sPoints.find(p) != sPoints.end())
+				el->f = firstH;                       //here
+			else if (sPointsEdge.find(p) != sPointsEdge.end())
 				el->f = secondH;
+			//el->f = (firstH+secondH)/2.0;//secondH;//1e+3;
+			else
+				el->f = (firstH + secondH) / 2.0;//secondH;//1e+3;*/
+				//el->f = secondH;
 			//imageF[p.X][p.Y] = el->f;
 		}
 		el = el->getNext();
 	}
-
+	
+	/*for (auto i = sPoints.begin(); i != sPoints.end(); ++i) {
+		Point* p = new Point(*i);
+		pointsvert.push_back(p);
+	}*/
 
 	el = Component->Border->Elements[1];
+	int i = 0;
 	while (el) {
 
 		if (el->isVertex) {
 			el = el->getNext();
 			continue;
 		}
-		el->f = /*max*/min(el->getNextLooped()->f, el->getPrevLooped()->f);
+
+		if (el->getNextLooped()->f*1.0 != (firstH + secondH) / 2.0 &&
+			el->getPrevLooped()->f*1.0 != (firstH + secondH) / 2.0 &&
+			el->getNextLooped()->f != el->getPrevLooped()->f)
+		{
+			pointsvert.push_back(((Vertex*)el->getNextLooped())->p);
+			pointsvert.push_back(((Vertex*)el->getPrevLooped())->p);
+
+			/*Point* p1 = ((Vertex*)el->getPrevLooped())->p;
+			Point* p2 = ((Vertex*)el->getNextLooped())->p;
+			Point* p3 = new Point((p1->X + p2->X) / 2, (p1->Y + p2->Y) / 2);
+			Vertex* newVert = new Vertex(p3);
+			Edge* newEdge1 = new Edge(p1, p3);
+			Edge* newEdge2 = new Edge(p3, p2);
+			newEdge1->moveAsNextFor(el);
+			newVert->f = 0.5;
+			newVert->moveAsNextFor(newEdge1);
+			newEdge2->moveAsNextFor(newVert);
+			el->removeFromCurrentList();
+			el = newEdge1;*/
+		}
+	
+		el->f = el->getPrevLooped()->f;//(el->getPrevLooped()->f + el->getNextLooped()->f) / 2.0; //min????????el->getPrevLooped()->f;
+		
+		if (el->getNextLooped()->f*1.0 == (firstH + secondH) / 2.0) {
+			el->f = el->getPrevLooped()->f;
+			//pointsvert.push_back( ((Vertex*)el->getNextLooped())->p );
+		}
+		if (el->getPrevLooped()->f*1.0 == (firstH + secondH) / 2.0) {
+			el->f = el->getNextLooped()->f;
+			//pointsvert.push_back(((Vertex*)el->getPrevLooped())->p);
+		}
+
+		//if (el->f == 0.5)
+		//	pointsvert.push_back(new Point( ( ((Vertex*)el->getPrevLooped())->p->X + ((Vertex*)el->getNextLooped())->p->X) / 2 ,  ( ((Vertex*)el->getPrevLooped())->p->Y  + ((Vertex*)el->getNextLooped())->p->Y ) / 2)) ;
+
 		el = el->getNext();
 	}
 
@@ -225,12 +428,12 @@ void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sP
 		el = el->getNext();
 	}
 }
-Reconstruct::Reconstruct(CImage im)
-    : image(im)
+Reconstruct::Reconstruct(CImage im, int col1, int col2)
+    : image(im)//, firstH(col1), secondH(col2)
 {
     skeleton = NULL;
     //image = im;
-    makeSkelet();
+    makeSkelet(/*image,skeleton*/ );
     imageF.resize(image.GetWidth());
     for (int i = 0; i < image.GetWidth(); ++i){
         imageF[i].resize(image.GetHeight());
@@ -253,9 +456,14 @@ void Reconstruct::SetInnerPointsofSkelet(TConnected* Component){//(TPolFigure* s
 				break;
             if ( Node->Sites[i]->f == firstH/*Cont->Internal*/ ){
                 sumint++;
-            } else {
+            } else if (Node->Sites[i]->f == secondH){
                 sumnotint++;
-            }
+			}
+			else
+			{
+				sumint++;
+				sumnotint++;
+			}
         }
         int l = firstH;
         int r = secondH;
@@ -344,8 +552,40 @@ void Reconstruct::findClosestBone(Cell& curcell, int i, int j, double x, double 
 //    }
 }
     
+int Reconstruct::vertPart(CImage imVert) 
+{
+	//std::sort(pointsvert.begin(), pointsvert.end());
+	/*for (int i = 1; i < pointsvert.size(); i+=2)
+	{
+		Cell newcell = Cell();
+		//if (pointsvert[i] == pointsvert[i-1])
+		newcell.borders.push_back(std::pair<Point, Point>( *pointsvert[i], *pointsvert[i-1] ));
+		//newcell.borders.push_back(std::pair<Point, Point>(pp2, Point(orgnode->X(), orgnode->Y())));
+		//newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+		newcell.borders_color.push_back(std::pair<double, double>((firstH+secondH)/2.0, (firstH + secondH) / 2.0) );
+		cells.push_back(newcell);
+	}*/
+	for (int i = 1; i < pointsvert.size(); i += 2)
+	{
+		Cell newcell = Cell();
+		newcell.borders.push_back(std::pair<Point, Point>(*pointsvert[i], *pointsvert[i - 1]));                        //if there are not one
+		newcell.borders_color.push_back(std::pair<double, double>((firstH + secondH) / 2.0, (firstH + secondH) / 2.0));
+		cells.push_back(newcell);
+	}
+	/*makeSkelet();
+	TConnected* Com = skeletonVert->Components->first();
+	while (Com)
+	{
+		TNode * Node = Com->Nodes->first();
+		addVerticalCells(Com, firstH, secondH);
+		Com = Com->getNext();
+	}*/
+	return 0;
+}
 
 int Reconstruct::mainPart(){
+	//skeleton->MakeTriangDel();
+	//skeleton->CutSkeleton(0);
     TConnected* Com = skeleton->Components->first();
 	while (Com)
 	{
@@ -364,6 +604,7 @@ int Reconstruct::mainPart(){
 		makeCells(Com);
 		Com = Com->getNext();
 	}
+	
    /* sort(cells.begin(), cells.end(), CellComp); //cellcompare()
      double d1, d2, h1, h2;
      double x, y;

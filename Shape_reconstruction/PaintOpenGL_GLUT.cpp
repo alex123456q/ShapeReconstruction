@@ -1,5 +1,5 @@
 ﻿#include <windows.h>
-#include <glut.h>   //Подключение библиотеки glut.h
+#include <GL/freeglut.h>   //Подключение библиотеки glut.h
 
 #include "paint_utils.h"
 #include "Processing.h"
@@ -194,10 +194,15 @@ void RenderingHeightMapLines(std::vector<std::vector<Cell>>& allcells/*, std::ve
 			for (auto bord = allcells[k][i].borders.begin(); bord != allcells[k][i].borders.end(); ++bord) {
 				glBegin(GL_LINES); // Линии
 				glColor3f(1.0f, 1.0f, 1.0f);
+
+				if (!allcells[k][i].skeletbone) 
+					glColor3f(1.0f, 0.0f, 0.0f);
 				//if (fabs(imageF[int(bord->first.X)][int(bord->first.Y)]) <1e-3)
 				//	glColor3f(1.0f, 0.7f, 0.7f);
 				glVertex3f(bord->first.X, allcells[k][i].borders_color[j].first * 7 /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
 				glColor3f(1.0f, 1.0f, 1.0f);
+				if (!allcells[k][i].skeletbone)
+					glColor3f(1.0f, 0.0f, 0.0f);
 				//if (fabs(imageF[int(bord->second.X)][int(bord->second.Y)]) <1e-3)
 				//	glColor3f(1.0f, 0.7f, 0.7f);
 				glVertex3f(bord->second.X, allcells[k][i].borders_color[j].second * 7/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
@@ -207,8 +212,10 @@ void RenderingHeightMapLines(std::vector<std::vector<Cell>>& allcells/*, std::ve
 			}
 			glColor3f(0.7f, 1.0f, 0.7f);
 			glBegin(GL_LINES); // Линии
-			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * 7, allcells[k][i].skeletbone->dest->Y());
-			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * 7, allcells[k][i].skeletbone->org->Y());
+			if (allcells[k][i].skeletbone) {
+				glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * 7, allcells[k][i].skeletbone->dest->Y());
+				glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * 7, allcells[k][i].skeletbone->org->Y());
+			}
 			glEnd();
 		}
 // 		for (int j = 0; j < cells[i].nodes.size()+1; ++j) {

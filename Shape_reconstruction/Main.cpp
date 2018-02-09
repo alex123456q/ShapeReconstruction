@@ -16,46 +16,74 @@ bool	ISBlack( COLORREF color, bool inverted = false) {
 		return !ans;
 	return ans;
 }
-
-
+bool check(Point* itersecond, Point* itersum)
+{
+	return (itersecond->X == itersum->X && itersecond->Y == itersum->Y);
+}
+bool check_eps(Point* itersecond, Point* itersum)
+{
+	return (abs(itersecond->X - itersum->X) < 2 && abs(itersecond->Y - itersum->Y) < 2);
+}
 std::vector<Cell> main12(CImage& source1, CImage& source2, int firstH, int secondH)
 {
-	CImage source, sourceboth;
+	CImage source, sourceboth, edge1, edge2, edge;
 
 	int width = min(source1.GetWidth(), source2.GetWidth()), height = min(source1.GetHeight(), source2.GetHeight());
 	
 	source.Create(width, height, 32);
-	//sourceboth.Create(width, height, 32);
+	sourceboth.Create(width, height, 32);
+	edge1.Create(width, height, 32);
+	edge2.Create(width, height, 32);
+	edge.Create(width, height, 32);
 
 	BitRaster* srcim1 = new BitRaster(width, height);
 	BitRaster* srcim2 = new BitRaster(width, height);
 	BitRaster* srcim = new BitRaster(width, height);
+	BitRaster* srcimboth = new BitRaster(width, height);
+	BitRaster* srcimedge = new BitRaster(width, height);
 
 	for (int i = 0; i < width; ++i)
 		for (int j = 0; j < height; ++j) {
 			source.SetPixel(i, j, /*RGB(255, 255, 255)-*/(source1.GetPixel(i, j) ^ source2.GetPixel(i, j)));
 
-			//sourceboth.SetPixel(i, j, (RGB(255, 255, 255) - source1.GetPixel(i, j)) & (RGB(255, 255, 255) - source2.GetPixel(i, j)));
-			/*if (i > 0 && j > 0 && i < width - 1 && j < height - 1) {
+			sourceboth.SetPixel(i, j, (RGB(255, 255, 255) - source1.GetPixel(i, j)) & (RGB(255, 255, 255) - source2.GetPixel(i, j)));
+			if (i > 0 && j > 0 && i < width - 1 && j < height - 1) {
 				if (!ISBlack(source1.GetPixel(i, j)) &&
 					(ISBlack(source1.GetPixel(i - 1, j)) ||
-			     		ISBlack(source1.GetPixel(i, j - 1)) ||
+						ISBlack(source1.GetPixel(i, j - 1)) ||
 						ISBlack(source1.GetPixel(i + 1, j)) ||
 						ISBlack(source1.GetPixel(i, j + 1)) ||
 						ISBlack(source1.GetPixel(i - 1, j - 1)) ||
 						ISBlack(source1.GetPixel(i + 1, j + 1))
 						)
 					)
-					source.SetPixel(i, j, RGB(255, 255, 255));
-			}*/
+					edge1.SetPixel(i, j, RGB(255, 255, 255));
+				if (!ISBlack(source2.GetPixel(i, j)) &&
+					(ISBlack(source2.GetPixel(i - 1, j)) ||
+						ISBlack(source2.GetPixel(i, j - 1)) ||
+						ISBlack(source2.GetPixel(i + 1, j)) ||
+						ISBlack(source2.GetPixel(i, j + 1)) ||
+						ISBlack(source2.GetPixel(i - 1, j - 1)) ||
+						ISBlack(source2.GetPixel(i + 1, j + 1))
+						)
+					)
+					edge2.SetPixel(i, j, RGB(255, 255, 255));
+				edge.SetPixel(i, j, edge1.GetPixel(i, j) & edge2.GetPixel(i, j));
+					//source.SetPixel(i, j, RGB(255, 255, 255));            //if innner???
+			}
 			srcim1->setBit(i, j, ISBlack(source1.GetPixel(i, j)));
 			srcim2->setBit(i, j, ISBlack(source2.GetPixel(i, j)));
 			srcim->setBit(i, j, ISBlack(source.GetPixel(i, j), true));
+			srcimboth->setBit(i, j, ISBlack(sourceboth.GetPixel(i, j), true));
+			srcimedge->setBit(i, j, ISBlack(edge.GetPixel(i, j), true));
 		}
 
-	TPolFigure* fig1 = new TPolFigure(srcim1, 10);// AreaIgnore  /*ïëîùàäü èãíîðèðóåìûõ êîíòóðîâ*/
-	TPolFigure* fig2 = new TPolFigure(srcim2, 10);
-	TPolFigure* fig = new TPolFigure(srcim, 10);
+	TPolFigure* fig1 = new TPolFigure(srcim1, 0);// AreaIgnore  /*ïëîùàäü èãíîðèðóåìûõ êîíòóðîâ*/
+	TPolFigure* fig2 = new TPolFigure(srcim2, 0);
+	TPolFigure* fig = new TPolFigure(srcim, 0);
+	TPolFigure* figboth = new TPolFigure(srcimboth, 0);
+	TPolFigure* figedge = new TPolFigure(srcimedge, 0);
+
 	std::vector<std::vector<double>> imageF;
 	imageF.resize(width);
 	for (int i = 0; i < width; ++i) {
@@ -64,13 +92,13 @@ std::vector<Cell> main12(CImage& source1, CImage& source2, int firstH, int secon
 	}
 	for (int i = 0; i < width; ++i) {
 		for (int j = 0; j < height; ++j) {
-			if (srcim->getBit(i, j))
+			if (/*srcim*/srcimedge->getBit(i, j))
 				imageF[i][j] = 1;
 		}
 	}
 	//PaintBorders(fig1, imageF);
 	PaintInFile(imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\figoutline.png"));
-
+	return std::vector<Cell>();
 	//    for (int i = 0; i < source1.GetWidth(); ++i){
 	//        imageF[i].resize(source1.GetHeight());
 	//        std::fill (imageF[i].begin(),imageF[i].begin()+source1.GetHeight(), -1);
@@ -107,19 +135,130 @@ std::vector<Cell> main12(CImage& source1, CImage& source2, int firstH, int secon
 		itersecond = itersecond->getNext();
 	}*/
 
+	std::vector<Point> borderPoints;
+	for (int i = 0; i < edge.GetWidth(); ++i)
+		for (int j = 0; j < edge.GetHeight(); ++j)
+			if (srcimedge->getBit(i, j) == 1 &&
+				srcimedge->getBit(i - 1, j - 1) + srcimedge->getBit(i - 1, j) + srcimedge->getBit(i, j - 1) +
+				srcimedge->getBit(i + 1, j + 1) + srcimedge->getBit(i + 1, j) + srcimedge->getBit(i, j + 1) == 1)
+			{
+				borderPoints.push_back(Point(i, j));
+			}
+
 	std::set<Point> sPoints;
+	std::set<Point> sPoints1;
+	std::set<Point> sPointsNo;
+
+	std::set<Point> sPointsEdge;
 	TConnected* Componentsum = fig->Components->first();
+
 	while (Componentsum) {
-		Point* itersum = Componentsum->Border->ListPoints->first();
+		Point* itersum = Componentsum->Border->ListPoints->first();//Componentsum->HoleList[0]->ListPoints->first();
 		while (itersum)
 		{
 			found = false;
-			TConnected* Component2 = fig2->Components->first();
+			TConnected* Component2 = fig2->Components->first();            //if connected fig2
 			while (Component2){
 				itersecond = Component2->Border->ListPoints->first();
 				while (itersecond) {
-					if (itersecond->X == itersum->X && itersecond->Y == itersum->Y) {
+					if (check(itersecond, itersum)){
+					//if (itersecond->X == itersum->X && itersecond->Y == itersum->Y) {
 						sPoints.insert(Point(itersum->X, itersum->Y));
+						found = true;
+						//if (check (itersecond->getNextLooped(), itersum->getNextLooped() ) || check(itersecond->getNextLooped(), itersum->getNextLooped()) )//check(  itersum->getPrevLooped() ) )
+						//sPoints.insert(Point(itersum->getNextLooped()->X, itersum->getNextLooped()->Y));
+						//sPoints.insert(Point(itersum->getPrevLooped()->X, itersum->getPrevLooped()->Y));
+
+						break;
+					}
+					itersecond = itersecond->getNext();
+				}
+				if (found)
+					break;
+				Component2 = Component2->getNext();
+			}
+
+			if (!found)
+
+			{
+				TConnected* Component1 = fig1->Components->first();            //if connected fig2
+				while (Component1) {
+					itersecond = Component1->Border->ListPoints->first();
+					while (itersecond) {
+						if (check(itersecond, itersum)) {
+							sPoints1.insert(Point(itersum->X, itersum->Y));
+							found = true;
+							break;
+						}
+						itersecond = itersecond->getNext();
+					}
+					if (found)
+						break;
+					Component1 = Component1->getNext();
+				}
+
+			}
+
+			if (!found)
+
+			{
+				sPointsNo.insert(Point(itersum->X, itersum->Y));
+
+				for (int i = 0; i < borderPoints.size(); ++i)
+					if (check_eps(&borderPoints[i], itersum) )
+					{
+						//found = true;
+						sPointsEdge.insert(*itersum);
+						break;
+					}
+				/*found = false;
+				TConnected* Component3 = figedge->Components->first();            //if connected fig2
+				while (Component3) {
+					itersecond = Component3->Border->ListPoints->first();
+					while (itersecond) {
+						if (check(itersecond, itersum)) {
+							//if (itersecond->X == itersum->X && itersecond->Y == itersum->Y) {
+							sPointsEdge.insert(Point(itersum->X, itersum->Y));
+							found = true;
+							//if (check (itersecond->getNextLooped(), itersum->getNextLooped() ) || check(itersecond->getNextLooped(), itersum->getNextLooped()) )//check(  itersum->getPrevLooped() ) )
+							//sPoints.insert(Point(itersum->getNextLooped()->X, itersum->getNextLooped()->Y));
+							//sPoints.insert(Point(itersum->getPrevLooped()->X, itersum->getPrevLooped()->Y));
+
+							break;
+						}
+						itersecond = itersecond->getNext();
+					}
+					if (found)
+						break;
+					Component3 = Component3->getNext();
+				}*/
+
+			}
+
+
+			itersum = itersum->getNext();
+		}
+		Componentsum = Componentsum->getNext();
+	}
+	std::cout << sPoints.size() << " " << sPoints1.size() << " no " << sPointsNo.size() << " e " << sPointsEdge.size() << " " ;
+
+
+
+
+
+	std::set<Point> sPointsCommon;
+	TConnected* Component1 = fig1->Components->first();
+	while (Component1) {
+		Point* iterfirst = Component1->Border->ListPoints->first();//Componentsum->HoleList[0]->ListPoints->first();
+		while (iterfirst)
+		{
+			found = false;
+			TConnected* Component2 = fig2->Components->first();            //if connected fig2
+			while (Component2) {
+				itersecond = Component2->Border->ListPoints->first();
+				while (itersecond) {
+					if (check(itersecond, iterfirst)) {
+						sPointsCommon.insert(Point(iterfirst->X, iterfirst->Y));
 						found = true;
 						break;
 					}
@@ -129,21 +268,27 @@ std::vector<Cell> main12(CImage& source1, CImage& source2, int firstH, int secon
 					break;
 				Component2 = Component2->getNext();
 			}
-			itersum = itersum->getNext();
+			iterfirst = iterfirst->getNext();
 		}
-		Componentsum = Componentsum->getNext();
+		Component1 = Component1->getNext();
 	}
-	std::cout << sPoints.size();
+
+
 	//  PaintBorders2(fig, imageF, sPoints);
 	//  PaintInFile(imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\figwithmet.png"));
 
-	Reconstruct*rec = new Reconstruct(source);
+	Reconstruct* rec = new Reconstruct(source, firstH, secondH);
+	rec->skeleton->MakeTriangDel();
+	rec->skeleton->CutSkeleton(0);
 	TConnected* Component = rec->skeleton->Components->first();
 	while (Component) {
-		rec->SetHeightforBorders(Component, sPoints, firstH, secondH);
+		rec->SetHeightforBorders(Component, sPoints/*No*//*Common*/, sPoints1/*sPointsNo*/, firstH, secondH);
 		Component = Component->getNext();
 	}
+	//rec->skeleton->MakeTriangDel();
+	//rec->skeleton->CutSkeleton(0);
 	rec->mainPart();
+	rec->vertPart(source);
 
 	/*for (int i = 0; i < source1.GetWidth(); ++i)
 		for (int j = 0; j < source1.GetHeight(); ++j) {
@@ -151,9 +296,9 @@ std::vector<Cell> main12(CImage& source1, CImage& source2, int firstH, int secon
 				rec->imageF[i][j] = 1;
 			if (ISBlack(source1.GetPixel(i, j), true))
 				rec->imageF[i][j] = 0;
-		}*/
+		}
 
-	//	PaintInFile(rec->imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\after_cur_out.png"));
+		PaintInFile(rec->imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\after_cur_out.png"));*/
 	//pr->selectPivot(0, 0);
 	source.Destroy();
 	free(srcim1);
@@ -166,7 +311,7 @@ std::vector<Cell> main12(CImage& source1, CImage& source2, int firstH, int secon
 	return rec->cells;
 }
 
-int main(int argc, char *argv[]) {
+int main156(int argc, char *argv[]) {
     //static HBITMAP bmpSource = NULL;
     std::vector<std::pair<CImage, int> > sources;
 	std::ifstream fin("C:/Users/Alexandra/My/Shape_reconstruction/data/slices.txt");
