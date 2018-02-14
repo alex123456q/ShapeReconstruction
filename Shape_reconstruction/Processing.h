@@ -8,6 +8,8 @@
 #include "atlimage.h"
 #include <set>
 #include <unordered_set>
+#include "opencv2/imgproc/imgproc.hpp"
+
 class Processing
 {
 public:
@@ -98,6 +100,7 @@ private:
     CImage image;
 public:
 	std::vector<Point*> pointsvert;
+	std::vector<int> partpointsvert;
 	vector<Cell> cells;
     Reconstruct(CImage im, int col1, int col2);
     ~Reconstruct();
@@ -106,7 +109,8 @@ public:
     void addVerticalCells(TConnected* Component, int color1, int color2);
 
     int mainPart();
-	int vertPart(CImage imVert);
+	int vertPart(CImage imVert, std::vector<cv::Point>& cvpoints);
+	int vertPart(CImage imVert, std::vector<Point>& cvpoints);
     void SetInnerPointsofSkelet(TConnected* Component);
 	void SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, std::set<Point>& sPointsEdge, int firstH, int secondH);
     void findClosestBorder(Cell& curcell, int i, int j, double&x, double&y, double& d1, double& f, std::vector<std::vector<double>>& imageF);

@@ -28,7 +28,7 @@ static void PaintLine(std::vector<std::vector<double>>& imageF, Point* Node, Poi
             int x = (-m.b*y-m.c)/m.a;
             if (m.a == 0)
                 x = Node->X;
-            imageF[x][y] =  color;
+            imageF[x][y] = color;
         }
     }
 	//imageF[min(Node->X, nextNode->X)][min(Node->Y, nextNode->Y)] = color;
@@ -87,14 +87,14 @@ static void PaintSkeletBones(TPolFigure*skeleton,std::vector<std::vector<double>
     }
 }
 
-static void PaintBorders(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF){
+static void PaintBorders(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF, double color = 1.0){
 	TConnected* comp = skeleton->Components->first();
 	while (comp) {
 		Point* p = /*skeleton->Components->first()*/comp->Border->ListPoints->first();
 		while (p) {
 			Point* Node = p;
 			Point* nextNode = p->getNextLooped();//GetNextNode(Node);
-			PaintLine(imageF, Node, nextNode, 1);
+			PaintLine(imageF, Node, nextNode, color);
 			p = p->getNext();
 		}
 		comp = comp->getNext();

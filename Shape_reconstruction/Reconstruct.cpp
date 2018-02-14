@@ -139,19 +139,19 @@ void Reconstruct::addVerticalCells(TConnected* Component, int color1, int color2
                 newcell.leftx = newcell.nodes[i].X;
             if (newcell.nodes[i].X > newcell.rightx)
                 newcell.rightx = newcell.nodes[i].X;
-            if (newcell.nodes[i].Y < newcell.downy)
-                newcell.downy = newcell.nodes[i].Y;
-            if (newcell.nodes[i].Y > newcell.upy)
-                newcell.upy = newcell.nodes[i].Y;
-            //PaintLine(imageF, &newcell.nodes[i], &newcell.nodes[(i+1)%newcell.nodes.size()], 1);
-        }
+if (newcell.nodes[i].Y < newcell.downy)
+	newcell.downy = newcell.nodes[i].Y;
+if (newcell.nodes[i].Y > newcell.upy)
+newcell.upy = newcell.nodes[i].Y;
+//PaintLine(imageF, &newcell.nodes[i], &newcell.nodes[(i+1)%newcell.nodes.size()], 1);
+		}
 
-        cells.push_back(newcell); //here we want a vector of vectors and insert with conditions
-        Bone = Bone->getNext();
+		cells.push_back(newcell); //here we want a vector of vectors and insert with conditions
+		Bone = Bone->getNext();
 		//++z;
 		//if (z == 64)18
 //		break;
-    }
+	}
 }
 
 void Reconstruct::makeCells(TConnected* Component) {
@@ -170,7 +170,7 @@ void Reconstruct::makeCells(TConnected* Component) {
 			for (int j = 0; j < 3; ++j) {
 				if (destnode->Sites[j] == orgnode->Sites[i]) {
 					found = true;
-					if (destnode->Sites[j]->isVertex) {						
+					if (destnode->Sites[j]->isVertex) {
 						Point pp1 = *((Vertex*)orgnode->Sites[i])->p;
 
 
@@ -210,7 +210,7 @@ void Reconstruct::makeCells(TConnected* Component) {
 					}
 					else {
 						Edge* edge = (Edge*)destnode->Sites[j];
-						
+
 						Point pp1 = get_perpendicular_pt_from_pt_to_line(*edge->dest, *edge->org, Point(destnode->X(), destnode->Y()));
 						//                         if (pp1.X == destnode->X() && pp1.Y == destnode->Y())
 						//                             break;
@@ -227,30 +227,65 @@ void Reconstruct::makeCells(TConnected* Component) {
 
 
 
-						/*if (edge->f == (firstH+secondH)/2)
+					/*	if (edge->f == (firstH + secondH) / 2.0)
 						{
 							//std::cout << "ok";
-							
-							if (edge->dest->X == destnode->X() && edge->dest->Y == destnode->Y() || edge->dest->X == orgnode->X() && edge->dest->Y == orgnode->Y())
+
+							if (edge->dest->X == destnode->X() && edge->dest->Y == destnode->Y())
 							{
 								std::cout << "yed";
 								destnode->f = 0.5;
-								orgnode->f = 0.5; //one of them
+								   //orgnode->f = 0.5; //one of them
 								edge->f = edge->getPrevLooped()->f;// orgnode->f;
 							}
+							else
+								if (edge->dest->X == orgnode->X() && edge->dest->Y == orgnode->Y())
+								{
+									std::cout << "yed";
+									//destnode->f = 0.5;
+									orgnode->f = 0.5; //one of them
+									edge->f = edge->getPrevLooped()->f;// orgnode->f;
+								}
 
-							if (edge->org->X == orgnode->X() && edge->org->Y == orgnode->Y() || edge->org->X == destnode->X() && edge->org->Y == destnode->Y())
+							if (edge->org->X == orgnode->X() && edge->org->Y == orgnode->Y() ) 
 							{
 								std::cout << "yeo";
 								orgnode->f = 0.5;
-								destnode->f = 0.5;
+								//destnode->f = 0.5;
 								edge->f = edge->getNextLooped()->f;
-							}
+							} else 
+								if (edge->org->X == destnode->X() && edge->org->Y == destnode->Y())
+								{
+									std::cout << "yeo";
+									//orgnode->f = 0.5;
+									destnode->f = 0.5;
+									edge->f = edge->getNextLooped()->f;
+								}
+
 							newcell.borders_color.push_back(std::pair<double, double>(edge->f, edge->f));
 							newcell.borders_color.push_back(std::pair<double, double>(edge->f, orgnode->f));
 							newcell.borders_color.push_back(std::pair<double, double>(edge->f, destnode->f));
-						}
-						else*/
+						}*/
+						/*if (edge->f == (firstH + secondH) / 2.0// &&
+					//	 ( (edge->dest->X == destnode->X() && edge->dest->Y == destnode->Y()) ||
+					//	 edge->dest->X == orgnode->X() && edge->dest->Y == orgnode->Y()  ||
+					//	 edge->org->X == orgnode->X() && edge->org->Y == orgnode->Y() ||
+					//	 edge->org->X == destnode->X() && edge->org->Y == destnode->Y() )
+						)
+						{
+							newcell.borders_color.push_back(std::pair<double, double>(firstH, firstH));
+							newcell.borders_color.push_back(std::pair<double, double>(firstH, orgnode->f));
+							newcell.borders_color.push_back(std::pair<double, double>(firstH, destnode->f));
+
+							newcell.borders.push_back(std::pair<Point, Point>(pp1, pp2));
+							newcell.borders.push_back(std::pair<Point, Point>(pp2, Point(orgnode->X(), orgnode->Y())));
+							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
+
+							newcell.borders_color.push_back(std::pair<double, double>(secondH, secondH));
+							newcell.borders_color.push_back(std::pair<double, double>(secondH, orgnode->f));
+							newcell.borders_color.push_back(std::pair<double, double>(secondH, destnode->f));
+						}*/
+						//else
 						{
 							newcell.borders_color.push_back(std::pair<double, double>(edge->f, edge->f));
 							newcell.borders_color.push_back(std::pair<double, double>(edge->f, orgnode->f));
@@ -323,7 +358,7 @@ void Reconstruct::makeSkelet(/*CImage image, TPolFigure* skelet*/){
     }
 
 	
-	skeleton = new TPolFigure(srcimg, 0);
+	skeleton = new TPolFigure(srcimg, -1.0);
     //skeleton->MakeTriangDel();
 	//skeleton->CutSkeleton(0);
 
@@ -337,6 +372,7 @@ void Reconstruct::makeSkelet(/*CImage image, TPolFigure* skelet*/){
 
 void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, std::set<Point>& sPointsEdge, int firstH_, int secondH_) {
 
+	static int comp = 0;
 	firstH = firstH_;
 	secondH = secondH_;
 	//Point * Node = skeleton->Components->first()->Border->ListPoints->first();//->Nodes->first();
@@ -388,7 +424,8 @@ void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sP
 		{
 			pointsvert.push_back(((Vertex*)el->getNextLooped())->p);
 			pointsvert.push_back(((Vertex*)el->getPrevLooped())->p);
-
+			partpointsvert.push_back(comp);
+			partpointsvert.push_back(comp);
 			/*Point* p1 = ((Vertex*)el->getPrevLooped())->p;
 			Point* p2 = ((Vertex*)el->getNextLooped())->p;
 			Point* p3 = new Point((p1->X + p2->X) / 2, (p1->Y + p2->Y) / 2);
@@ -401,17 +438,22 @@ void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sP
 			newEdge2->moveAsNextFor(newVert);
 			el->removeFromCurrentList();
 			el = newEdge1;*/
+			el->f = (firstH + secondH) / 2.0;
 		}
-	
+		//else
 		el->f = el->getPrevLooped()->f;//(el->getPrevLooped()->f + el->getNextLooped()->f) / 2.0; //min????????el->getPrevLooped()->f;
 		
 		if (el->getNextLooped()->f*1.0 == (firstH + secondH) / 2.0) {
 			el->f = el->getPrevLooped()->f;
-			//pointsvert.push_back( ((Vertex*)el->getNextLooped())->p );
+			pointsvert.push_back( ((Vertex*)el->getNextLooped())->p );  //only once
+			partpointsvert.push_back(comp);
 		}
+	
 		if (el->getPrevLooped()->f*1.0 == (firstH + secondH) / 2.0) {
 			el->f = el->getNextLooped()->f;
 			//pointsvert.push_back(((Vertex*)el->getPrevLooped())->p);
+			//partpointsvert.push_back(comp);
+
 		}
 
 		//if (el->f == 0.5)
@@ -427,6 +469,7 @@ void Reconstruct::SetHeightforBorders(TConnected* Component, std::set<Point>& sP
 		el->f = secondH;
 		el = el->getNext();
 	}
+	++comp;
 }
 Reconstruct::Reconstruct(CImage im, int col1, int col2)
     : image(im)//, firstH(col1), secondH(col2)
@@ -551,10 +594,56 @@ void Reconstruct::findClosestBone(Cell& curcell, int i, int j, double x, double 
         f = bone->dest->f * (d2/(d1+d2)) + bone->org->f * (d1/(d1+d2));
 //    }
 }
-    
-int Reconstruct::vertPart(CImage imVert) 
+/*#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+std::vector<std::vector<cv::Point>> selectContours(std::string& filename = std::string("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\figoutline.png"))
+{
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<cv::Vec4i> hierarchy;
+	cv::Mat src;
+	src = cv::imread(filename, 1);
+	cvtColor(src, src, CV_BGR2GRAY);
+	cv::findContours(src, contours, hierarchy, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+	return contours;
+}*/
+#include "opencv2/imgproc/imgproc.hpp"
+int Reconstruct::vertPart(CImage imVert, std::vector<Point>& cvpoints)
+{
+	for (int i = 0; i < cvpoints.size(); ++i)
+	{
+		Cell newcell = Cell();
+		Point p = cvpoints[i];
+		Point p2 = cvpoints[(i + 1) % cvpoints.size()];
+		if (pow(p.X - p2.X, 2) + pow(p.Y - p2.Y, 2) >1000)
+			continue;
+
+		newcell.borders.push_back(std::pair<Point, Point>(p, p2));
+		newcell.borders_color.push_back(std::pair<double, double>((firstH + secondH) / 2.0, (firstH + secondH) / 2.0));
+
+		newcell.borders.push_back(std::pair<Point, Point>(p, p2));
+		newcell.borders_color.push_back(std::pair<double, double>((firstH), (firstH)));
+
+		newcell.borders.push_back(std::pair<Point, Point>(p, p2));
+		newcell.borders_color.push_back(std::pair<double, double>((secondH), (secondH)));
+
+		cells.push_back(newcell);
+	}
+	return 0;
+}
+int Reconstruct::vertPart(CImage imVert, std::vector<cv::Point>& cvpoints)
 {
 	//std::sort(pointsvert.begin(), pointsvert.end());
+	/*for (int i = 0; i < pointsvert.size(); ++i)
+		for (int j = i + 1; j < pointsvert.size(); ++j)
+		{
+			if (partpointsvert[i] != partpointsvert[j])
+			{
+				Cell newcell = Cell();
+				newcell.borders.push_back(std::pair<Point, Point>(*pointsvert[i], *pointsvert[j]));
+				newcell.borders_color.push_back(std::pair<double, double>((firstH + secondH) / 2.0, (firstH + secondH) / 2.0));
+				cells.push_back(newcell);
+			}
+		}*/
 	/*for (int i = 1; i < pointsvert.size(); i+=2)
 	{
 		Cell newcell = Cell();
@@ -565,13 +654,50 @@ int Reconstruct::vertPart(CImage imVert)
 		newcell.borders_color.push_back(std::pair<double, double>((firstH+secondH)/2.0, (firstH + secondH) / 2.0) );
 		cells.push_back(newcell);
 	}*/
-	for (int i = 1; i < pointsvert.size(); i += 2)
+
+	//for (auto i = cvpoints.begin(); i != cvpoints.end(); ++i) 
+
+	for (int i = 0; i < cvpoints.size(); ++i)
+	{
+		Cell newcell = Cell();
+		cv::Point p = cvpoints[i];
+		cv::Point p2 = cvpoints[(i+1)% cvpoints.size()];
+		
+		newcell.borders.push_back(std::pair<Point, Point>(Point(p.x, p.y), Point(p2.x, p2.y)));
+		newcell.borders_color.push_back(std::pair<double, double>((firstH + secondH) / 2.0, (firstH + secondH) / 2.0));
+		
+		newcell.borders.push_back(std::pair<Point, Point>(Point(p.x, p.y), Point(p2.x, p2.y)));
+		newcell.borders_color.push_back(std::pair<double, double>((firstH ), (firstH) ));
+
+		newcell.borders.push_back(std::pair<Point, Point>(Point(p.x, p.y), Point(p2.x, p2.y)));
+		newcell.borders_color.push_back(std::pair<double, double>(( secondH), ( secondH)));
+
+		cells.push_back(newcell);
+	}
+
+	/*std::vector<std::vector<cv::Point>> ps = selectContours();
+	
+	for (int i = 0; i < ps.size(); ++i)
+	{
+		for (int j = 0; j < ps[i].size()-1; ++j) {
+			Cell newcell = Cell();
+			cv::Point p = ps[i][j];//*ps[i].begin();
+			cv::Point p2 = ps[i][j + 1];//*ps[i].rbegin();
+			newcell.borders.push_back(std::pair<Point, Point>(Point(p.x, p.y), Point(p2.x, p2.y)));
+			newcell.borders_color.push_back(std::pair<double, double>((firstH + secondH) / 2.0, (firstH + secondH) / 2.0));
+			cells.push_back(newcell);
+		}
+	}*/
+	/*for (int i = 1; i < pointsvert.size(); i += 2)
 	{
 		Cell newcell = Cell();
 		newcell.borders.push_back(std::pair<Point, Point>(*pointsvert[i], *pointsvert[i - 1]));                        //if there are not one
 		newcell.borders_color.push_back(std::pair<double, double>((firstH + secondH) / 2.0, (firstH + secondH) / 2.0));
 		cells.push_back(newcell);
-	}
+	}*/
+
+
+
 	/*makeSkelet();
 	TConnected* Com = skeletonVert->Components->first();
 	while (Com)
