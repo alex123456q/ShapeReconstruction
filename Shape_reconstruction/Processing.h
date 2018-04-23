@@ -7,6 +7,7 @@
 #include "SkeletonDemoGUI/SkeletonLib/BSTrans.h"
 #include "atlimage.h"
 #include <set>
+#include <map>
 #include <unordered_set>
 #include "opencv2/imgproc/imgproc.hpp"
 
@@ -73,6 +74,8 @@ struct one_point_compare {
     }
 };
 
+enum Borders { Floor, Wall, Roof };
+
 struct Cell{
     double leftx, rightx, upy, downy;
     //vector<TBone> bones; 
@@ -81,8 +84,22 @@ struct Cell{
     vector<Point> nodes;
     std::/*unordered_*//*set*/vector<std::pair<Point, Point>/*, point_compare*/> borders;
 	std::vector<std::pair<double, double> > borders_color;
-    vector<Element*> cellels;
 
+	std::map<Borders, std::vector<std::pair<Point, Point>>> bords;
+	std::map<Borders, std::vector<std::pair<double, double> >> bords_color;
+
+	bool skeletboneex;
+    vector<Element*> cellels;
+	Cell()
+	{
+		bords[Floor] = std::vector<std::pair<Point, Point>>();
+		bords[Wall] = std::vector<std::pair<Point, Point>>();
+		bords[Roof] = std::vector<std::pair<Point, Point>>();
+
+		bords_color[Floor] = std::vector<std::pair<double, double>>();
+		bords_color[Wall] = std::vector<std::pair<double, double>>();
+		bords_color[Roof] = std::vector<std::pair<double, double>>();
+	}
 //     bool operator< (const Cell& another){
 //         return leftx < another.leftx;
 //     }
@@ -99,6 +116,7 @@ private:
 //     vector<Cell> cells; 
     CImage image;
 public:
+	vector<vector<int> > im;
 	std::vector<Point*> pointsvert;
 	std::vector<int> partpointsvert;
 	vector<Cell> cells;

@@ -12,9 +12,9 @@ std::vector<std::vector<Cell>> cellstopaint;
 float angle = -0.0133;// 0.0;
 // координаты вектора направления движения камеры
 float lx = 0.0133/*0*/ , lz = -1/*-1*/;
-float scaleValue = 0.36f;//0.46f;//0.56f;//0.15f;
+float scaleValue = 0.86f;//0.36f;//0.34//0.36f;//0.46f;//0.56f;//0.15f;
 // XZ позиция камеры
-float x = 40.0f, z = 205.0f;
+float x = 70.0f, z = 205.0f; // 40.0f, z = 205.0f;
 //Ключи статуса камеры. Переменные инициализируются нулевыми значениями
 //когда клавиши не нажаты
 float deltaAngle = 0.0f;
@@ -161,10 +161,10 @@ int xOrigin = -1;
 //}
 /* Global variables */
 char title[] = "3D Shapes";
-
+const float HEIGHT_COEF = 7;
 /* Initialize OpenGL Graphics */
 void initGL() {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color to black and opaque
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background color to black and opaque 0 0 0 0
 	glClearDepth(1.0f);                   // Set background depth to farthest
 	glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
 	glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
@@ -187,35 +187,35 @@ void RenderingHeightMapLines(std::vector<std::vector<Cell>>& allcells/*, std::ve
 // 	glColor3f(1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < allcells.size(); ++k){
 		for (int i = 0; i < allcells[k].size(); ++i) {
-			glColor3f(1.0f, 1.0f, 1.0f);
+			glColor3f(0.0f, 0.0f, 0.0f);
 			//auto cellborder = cells[i].bordersNodes.begin();
 			//std::cout << " border size : " << cells[i].bordersNodes.size() <<  " " << cells[i].borders.size() << std::endl;
 			int j = 0;
 			for (auto bord = allcells[k][i].borders.begin(); bord != allcells[k][i].borders.end(); ++bord) {
 				glBegin(GL_LINES); // Линии
-				glColor3f(1.0f, 1.0f, 1.0f);
+				glColor3f(0.0f, 0.0f, 0.0f);
 
-				if (!allcells[k][i].skeletbone) 
-					glColor3f(1.0f, 0.0f, 0.0f);
+				//if (!allcells[k][i].skeletboneex) 
+				//	glColor3f(1.0f, 0.0f, 0.0f);
 				//if (fabs(imageF[int(bord->first.X)][int(bord->first.Y)]) <1e-3)
 				//	glColor3f(1.0f, 0.7f, 0.7f);
-				glVertex3f(bord->first.X, allcells[k][i].borders_color[j].first * 7 /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
-				glColor3f(1.0f, 1.0f, 1.0f);
-				if (!allcells[k][i].skeletbone)
-					glColor3f(1.0f, 0.0f, 0.0f);
+				glVertex3f(bord->first.X, allcells[k][i].borders_color[j].first * HEIGHT_COEF /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
+				glColor3f(0.0f, 0.0f, 0.0f);
+				//if (!allcells[k][i].skeletboneex)
+				//	glColor3f(1.0f, 0.0f, 0.0f);
 				//if (fabs(imageF[int(bord->second.X)][int(bord->second.Y)]) <1e-3)
 				//	glColor3f(1.0f, 0.7f, 0.7f);
-				glVertex3f(bord->second.X, allcells[k][i].borders_color[j].second * 7/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
+				glVertex3f(bord->second.X, allcells[k][i].borders_color[j].second * HEIGHT_COEF/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
 				glEnd();;
 				++j;
 				//++cellborder;
 			}
-			glColor3f(0.7f, 1.0f, 0.7f);
+			glColor3f(0.0f, 1.0f, 0.0f);
 			glBegin(GL_LINES); // Линии
-			if (allcells[k][i].skeletbone) {
-				glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * 7, allcells[k][i].skeletbone->dest->Y());
-				glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * 7, allcells[k][i].skeletbone->org->Y());
-			}
+			//if (allcells[k][i].skeletboneex) {
+				glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+				glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			//}
 			glEnd();
 		}
 // 		for (int j = 0; j < cells[i].nodes.size()+1; ++j) {
@@ -337,8 +337,8 @@ void display() {
 	 //gluLookAt(50, 8, 225, 51, 2, 150, 0, 1, 0);  // Определяет вид и положение камеры
 
 
-	gluLookAt(x, 5.0f, z,                    //0.8 1
-		x + lx*75, 10.0f, z + lz*75,
+	gluLookAt(x, 40.0f, z,                    //0.8 1   //30  10
+		x + lx*75, 30.0f, z + lz*75,                    //20  5
 		0.0f, 1.0f, 0.0f);
 
     glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);
@@ -442,7 +442,8 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
 	glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
 	glLoadIdentity();             // Reset
 								  // Enable perspective projection with fovy, aspect, zNear and zFar
-	gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+	//gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+	gluPerspective(130, 1, 50, 0);
 }
 
 /* Main function: GLUT runs as a console application starting at main() */

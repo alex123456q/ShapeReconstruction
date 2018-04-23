@@ -18,20 +18,27 @@ using namespace std;
 	void thresh_callback(int, void*);
 
 	/** @function main */
-	int main09(int argc, char** argv)
+	int main1(int argc, char** argv)
 	{
 		/// Load source image and convert it to gray
 		char* filename = argc >= 2 ? argv[1] : "C:\\Users\\Alexandra\\My\\Downloads\\Concha\\Concha\\NewSliceSeries\\Concha_020_x1y1x0y90z0x0y0z0copy\\17.jpg";
+		//	"C:\\Users\\Alexandra\\My\\Downloads\\Concha\\Concha\\NewSliceSeries\\Concha_020_x1y1x0y90z0x0y0z0copy\\output_MOG\\output_MOG_17.png";
 		//"C:\\Users\\Alexandra\\My\\Downloads\\Concha\\Concha\\NewSliceSeries\\Concha_020_x1y1x0y90z0x0y0z0copy\\bin_contours\\15_lu_inv.jpg";//"C:\\Users\\Alexandra\\My\\Downloads\\Concha\\Concha\\NewSliceSeries\\Concha_020_x1y1x0y90z0x0y0z0copy\\17.jpg";//"C:\\Users\\Alexandra\\My\\Downloads\\Concha\\Concha\\NewSliceSeries\\Concha_020_x1y1x0y90z0x0y0z0copy\\17.jpg";
 		//"C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\fig0.png";
 		//"C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\figoutline.png";
+		
 		src = imread(filename, 1);
+		//src_gray = imread(filename, 0);
+
+		
 
 		/// Convert image to gray and blur it
 		cvtColor(src, src_gray, CV_BGR2GRAY);
 		blur(src_gray, src_gray, Size(3, 3));
 		//src_gray = GaussianBlur(src_gray, Size(5, 5), Size(0));
-		threshold(src_gray, src_gray, 20, 255, THRESH_BINARY + THRESH_OTSU);
+		//threshold(src_gray, src_gray, 20, 255, THRESH_BINARY + THRESH_OTSU);
+		adaptiveThreshold(src_gray, src_gray, 255, ADAPTIVE_THRESH_MEAN_C/*ADAPTIVE_THRESH_GAUSSIAN_C*/,
+			/*THRESH_BINARY */THRESH_BINARY_INV	, 11, 12);
 		//threshold(src_gray, dst, threshold_value, max_BINARY_value, threshold_type);
 		namedWindow("thresh", CV_WINDOW_AUTOSIZE);
 		imshow("thresh", src_gray);
@@ -39,7 +46,7 @@ using namespace std;
 		/// Create Window
 		char* source_window = "Source";
 		namedWindow(source_window, CV_WINDOW_AUTOSIZE);
-		imshow(source_window, src);
+		//imshow(source_window, src);
 
 		createTrackbar(" Canny thresh:", "Source", &thresh, max_thresh, thresh_callback);
 		thresh_callback(0, 0);
