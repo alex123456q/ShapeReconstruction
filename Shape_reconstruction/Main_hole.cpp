@@ -346,13 +346,16 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 			while (Component1) {
 				Point* itersecond = Component1->Border->ListPoints->first();
 				while (itersecond) {
-					file3 << itersecond->X << "," << itersecond->Y << "," << secondH_ << std::endl;
+					//file3 << itersecond->X << "," << itersecond->Y << "," << secondH_ << std::endl;
+					file3 << itersecond->X << " " << itersecond->Y << ",";
 					itersecond = itersecond->getNext();
 				}
 				Component1 = Component1->getNext();
+				file3 << ";";
 			}
 		}
-	//	return std::vector<Cell>();
+		file3 << std::endl;
+		return std::vector<Cell>();
 		std::set<Point> sPoints;
 		std::set<Point> sPoints1;
 		std::set<Point> sPointsNo;
@@ -633,12 +636,12 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 				Bone = Bone->getNext();
 			}
 
-			for (int i = 0; i < Nodes.size(); ++i) {                 //1
+			for (int i = 0; i < Nodes.size(); ++i) {                 //1   if existing then perps in existing
 				Nodes[i]->Disc->Rad = -1;
 				//minNode->Disc->Rad = -1;
 			}
 
-			/*{
+			{
 				TBone * bone = new TBone();
 				TNode * newnode = new TNode();
 
@@ -673,7 +676,49 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 
 				bone->moveAsNextFor(minBone);
 				newnode->moveAsNextFor(minBone->org);
-			}*/
+
+
+				for (int i = 0; i < found; ++i)
+				{
+					Element* el = newnode->Sites[i];
+
+					Point* p1 = ((Vertex*)el->getPrevLooped())->p;
+					Point* p2 = ((Vertex*)el->getNextLooped())->p;
+					Point* p3 = new Point((p1->X + p2->X) / 2, (p1->Y + p2->Y) / 2);
+					Vertex* newVert = new Vertex(p3);
+					Edge* newEdge1 = new Edge(p1, p3);
+					Edge* newEdge2 = new Edge(p3, p2);
+					//newEdge1->f = ((Vertex*)el->getPrevLooped())->f;
+					//newEdge2->f = ((Vertex*)el->getNextLooped())->f;
+
+					newVert->f = 0.5;
+
+					newEdge1->moveAsNextFor(el->getPrevLooped());
+					newVert->moveAsNextFor(newEdge1);
+					newEdge2->moveAsNextFor(newVert);
+					el->removeFromCurrentList();
+					//newEdge2->getNextLooped();
+					//newEdge1->getNextLooped();
+					//newEdge1->getPrevLooped();
+					//el = newEdge2;
+				}
+
+
+			}
+			/*Point* p1 = ((Vertex*)el->getPrevLooped())->p;
+			Point* p2 = ((Vertex*)el->getNextLooped())->p;
+			Point* p3 = new Point((p1->X + p2->X) / 2, (p1->Y + p2->Y) / 2);
+			Vertex* newVert = new Vertex(p3);
+			Edge* newEdge1 = new Edge(p1, p3);
+			Edge* newEdge2 = new Edge(p3, p2);
+			newEdge1->f = ((Vertex*)el->getPrevLooped())->f;
+			newEdge2->f = ((Vertex*)el->getNextLooped())->f;
+			newEdge1->moveAsNextFor(el);
+			newVert->f = 0.5;
+			newVert->moveAsNextFor(newEdge1);
+			newEdge2->moveAsNextFor(newVert);
+			el->removeFromCurrentList();
+			el = newEdge2; */
 			
 			Component = Component->getNext();
 		}
@@ -692,8 +737,8 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 		//for (int i = 0; i < cont3.size(); ++i)
 		//	rec->vertPart(source, cont3[i]);
 
-		for (int i = 0; i < source1.GetWidth(); ++i)
-			for (int j = 0; j < source1.GetHeight(); ++j) {
+		for (int i = 0; i < width; ++i)
+			for (int j = 0; j < height; ++j) {
 				//if (ISBlack(source2.GetPixel(i, j)))
 				//	rec->imageF[i][j] = 1;
 				//if (ISBlack(source1.GetPixel(i, j), true))
@@ -718,8 +763,39 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 		return rec->cells;
 	}
 
-	int main(int argc, char *argv[]) {
+	int main0(int argc, char *argv[]) {
 		//static HBITMAP bmpSource = NULL;
+
+
+/*		CImage source;
+		source.Load("C:\\Users\\Alexandra\\Downloads\\diplom8.jpg");
+		int width = source.GetWidth(), height = source.GetHeight();
+		BitRaster* srcim = new BitRaster(width, height);
+
+		for (int i = 0; i < width; ++i) {
+			for (int j = 0; j < height; ++j) {
+				srcim->setBit(i, j, ISBlack(source.GetPixel(i, j), true));
+				//source.SetPixel(i, j, RGB(255, 255, 255)-source.GetPixel(i, j) );
+			}
+		}
+
+		//TPolFigure* fig = new TPolFigure(srcim, 0);
+		Reconstruct* rec = new Reconstruct(source, 0, 1);
+
+		rec->skeleton->MakeTriangDel();
+		rec->skeleton->CutSkeleton(0);
+
+		for (int i = 0; i < source.GetWidth(); ++i)
+			for (int j = 0; j < source.GetHeight(); ++j) {
+				if (!srcim->getBit(i, j))
+					rec->imageF[i][j] = 1;
+				else
+					rec->imageF[i][j] = 0.3;
+			}
+		PaintSkeletBones(rec->skeleton, rec->imageF, true);
+		rec->mainPart();
+		PaintInFile(rec->imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\figdim.png"));
+		return 0;*/
 		std::vector<std::pair<CImage, int> > sources;
 		std::ifstream fin("C:/Users/Alexandra/My/Shape_reconstruction/data/slices.txt"); //yesno.txt   slices.txt
 		std::string path;
@@ -757,8 +833,8 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 		/*source0.Create(sources[0].first.GetWidth(), sources[0].first.GetHeight(), 32);
 		for (int i = 0; i < sources[0].first.GetWidth(); ++i)
 			for (int j = 0; j < sources[0].first.GetHeight(); ++j)
-				source0.SetPixel(i, j, RGB(0, 0, 0));
-		file3.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid3.txt", ios::out | ios::app);*/
+				source0.SetPixel(i, j, RGB(0, 0, 0));*/
+		file3.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid_more.txt", ios::out | ios::app);//*/
 		for (int i = 0; i < sources.size() - 1; ++i)
 		{
 			//if success - better to divide
@@ -770,158 +846,79 @@ void contours_matching(std::vector<Cell>& upper, std::vector<Cell>& downer, int 
 			//cpoint = calc_upper_border(cvec[i], sources[i+1].second);
 		}
 
-		//file3.close();
-
-		/*ofstream file;
-		file.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid2.txt", ios::out | ios::app);
-
-		std::pair<Point, Point> prevPoints = std::pair<Point, Point>(Point(-1,-1), Point(-1, -1));
-		bool firstwas = false;
+	/*	ofstream file;
+		file.open("C:/Users/Alexandra/My/Shape_reconstruction/data/GridNew.txt", ios::out | ios::app);
 		for (int k = 0; k < cvec.size(); ++k) {
+			double prevX = cvec[k][0].skeletbone->org->X();
+			double prevY = cvec[k][0].skeletbone->org->Y();
+			file << cvec[k][0].skeletbone->org->X() << "," << cvec[k][0].skeletbone->org->Y() << "," << cvec[k][0].skeletbone->org->f*10 << std::endl;
+
 			for (int i = 0; i < cvec[k].size(); ++i) {
-				int j = 0;
-				for (auto bord = cvec[k][i].borders.begin(); bord != cvec[k][i].borders.end(); ++bord) {
-					if (bord->first.X == bord->second.X && bord->first.Y == bord->second.Y) {
-						++j;
-						continue;
-					}
+				//double prevX = cvec[k][i].skeletbone->org->X();
+				//double prevY = cvec[k][i].skeletbone->org->Y();
+				if (!(cvec[k][i].skeletbone->org->X() == prevX &&  cvec[k][i].skeletbone->org->Y() == prevY))
+				{
+					prevX = cvec[k][i].skeletbone->org->X();
+					prevY = cvec[k][i].skeletbone->org->Y();
+					file << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f*10 << std::endl;
+				}
+				//file << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f << std::endl;
+				if (!(cvec[k][i].nodes[0].X == prevX && cvec[k][i].nodes[0].Y == prevY))
+				{
+					prevX = cvec[k][i].nodes[0].X;
+					prevY = cvec[k][i].nodes[0].Y;
+					file << cvec[k][i].nodes[0].X << "," << cvec[k][i].nodes[0].Y << "," << cvec[k][i].color[0]*10 << std::endl;
+				}
+				int curi = 1;
+				if (cvec[k][i].paired[0])
+				{
 
-					if (cvec[k][i].borders_color[j].first != 0) {
-						++j;
-						continue;
-					}
-					if (prevPoints.first.X == -1) {
-						prevPoints = *bord;
-						++j;
-						continue;
-					}
-
-					if (!firstwas)
+					if (!(cvec[k][i].nodes[curi].X == prevX && cvec[k][i].nodes[curi].Y == prevY))
 					{
-
-						if (prevPoints.first.X == bord->first.X && prevPoints.first.Y == bord->first.Y
-							|| prevPoints.first.X == bord->second.X && prevPoints.first.Y == bord->second.Y)
-							prevPoints = std::pair<Point, Point>(prevPoints.second, prevPoints.first);
-						firstwas = true;
-						file << prevPoints.first.X << " " << prevPoints.first.Y << " " << 0 << std::endl;
+						prevX = cvec[k][i].nodes[curi].X;
+						prevY = cvec[k][i].nodes[curi].Y;
+						file << cvec[k][i].nodes[curi].X << "," << cvec[k][i].nodes[curi].Y << "," << cvec[k][i].color[curi]*10 << std::endl;
 					}
-
-					if (prevPoints.second.X == bord->first.X && prevPoints.second.Y == bord->first.Y)
-						prevPoints = *bord;
-					else
-						prevPoints = std::pair<Point, Point>(bord->second, bord->first);
-					file << prevPoints.second.X << " " << prevPoints.second.Y << " " << 0 << std::endl;
-					//file << "(" << bord->first.X << "," << bord->first.Y << "," << cvec[k][i].borders_color[j].first << ")";
-					//file << "(" << bord->second.X << "," << bord->second.Y << "," << cvec[k][i].borders_color[j].second << ")";
-					//file << "]";
-					++j;
+					++curi;
+					//file << cvec[k][i].nodes[curi].X << "," << cvec[k][curi].nodes[0].Y << std::endl; ++curi;
 				}
-				//file << "[";
-				//file << "(" << cvec[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f << ")";
-				//file << "(" << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f << ")";
-				//file << "]";
-			}
-			//file << std::endl;
-		}
-		file <<  prevPoints.second.X << " " << prevPoints.second.Y << " " << 0 << std::endl;
 
-		prevPoints = std::pair<Point, Point>(Point(-1, -1), Point(-1, -1));
-		firstwas = false;
-		for (int k = 0; k < cvec.size() ; ++k) {
-			for (int i = 0; i < cvec[k].size(); ++i) {
-				int j = 0;
-				for (auto bord = cvec[k][i].borders.begin(); bord != cvec[k][i].borders.end(); ++bord) {
-					if (bord->first.X == bord->second.X && bord->first.Y == bord->second.Y) {
-						++j;
-						continue;
-					}
-
-					if (cvec[k][i].borders_color[j].first != 1) {
-						++j;
-						continue;
-					}
-					if (prevPoints.first.X == -1) {
-						prevPoints = *bord;
-						++j;
-						continue;
-					}
-
-					if (!firstwas)
+				file << cvec[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f*10 << std::endl;
+				if (cvec[k][i].paired[curi])
+				{
+					++curi;
+					if (!(cvec[k][i].nodes[curi].X == prevX && cvec[k][i].nodes[curi].Y == prevY))
 					{
-
-						if (prevPoints.first.X == bord->first.X && prevPoints.first.Y == bord->first.Y
-							|| prevPoints.first.X == bord->second.X && prevPoints.first.Y == bord->second.Y)
-							prevPoints = std::pair<Point, Point>(prevPoints.second, prevPoints.first);
-						firstwas = true;
-						file << prevPoints.first.X << " " << prevPoints.first.Y << " " << 1 << std::endl;
+						prevX = cvec[k][i].nodes[curi].X;
+						prevY = cvec[k][i].nodes[curi].Y;
+						file << cvec[k][i].nodes[curi].X << "," << cvec[k][i].nodes[curi].Y << "," << cvec[k][i].color[curi]*10 << std::endl;
 					}
-
-					if (prevPoints.second.X == bord->first.X && prevPoints.second.Y == bord->first.Y)
-						prevPoints = *bord;
-					else
-						prevPoints = std::pair<Point, Point>(bord->second, bord->first);
-					file <<  prevPoints.second.X << " " << prevPoints.second.Y << " " << 1 << std::endl;
-					//file << "(" << bord->first.X << "," << bord->first.Y << "," << cvec[k][i].borders_color[j].first << ")";
-					//file << "(" << bord->second.X << "," << bord->second.Y << "," << cvec[k][i].borders_color[j].second << ")";
-					//file << "]";
-					++j;
+					--curi;
+					//++curi;	file << cvec[k][i].nodes[curi].X << "," << cvec[k][curi].nodes[0].Y << std::endl; --curi;
 				}
-				//file << "[";
-				//file << "(" << cvec[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f << ")";
-				//file << "(" << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f << ")";
-				//file << "]";
+				if (!(cvec[k][i].nodes[curi].X == prevX && cvec[k][i].nodes[curi].Y == prevY))
+				{
+					prevX = cvec[k][i].nodes[curi].X;
+					prevY = cvec[k][i].nodes[curi].Y;
+					file << cvec[k][i].nodes[curi].X << "," << cvec[k][i].nodes[curi].Y << "," << cvec[k][i].color[curi]*10 << std::endl;
+				}
+				if (!(cvec[k][i].skeletbone->org->X() == prevX && cvec[k][i].skeletbone->org->Y() == prevY))
+				{
+					//file << cvec[k][i].nodes[curi].X << "," << cvec[k][i].nodes[curi].Y << std::endl;
+					file << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f*10 << std::endl;
+				}
+
+				prevX = cvec[k][i].skeletbone->dest->X();
+				prevY = cvec[k][i].skeletbone->dest->Y();
+
+				//file << cvec[k][i].nodes[curi].X << "," << cvec[k][i].nodes[curi].Y << std::endl; ++curi;
+				//file << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << std::endl;
+				file << cvec[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f*10 << std::endl;
 			}
-			//file << std::endl;
 		}
-		file <<  prevPoints.second.X << " " << prevPoints.second.Y << " " << 1 << std::endl;
-		*/
-	/*	int k = cvec.size() - 1;
-			for (int i = 0; i < cvec[k].size(); ++i) {
-				int j = 0;
-				for (auto bord = cvec[k][i].borders.begin(); bord != cvec[k][i].borders.end(); ++bord) {
-					if (bord->first.X == bord->second.X && bord->first.Y == bord->second.Y) {
-						++j;
-						continue;
-					}
-					if (cvec[k][i].borders_color[j].first != 5) {
-						++j;
-						continue;
-					}
-					file << "[";
-					file << "(" << bord->first.X << "," << bord->first.Y << "," << cvec[k][i].borders_color[j].first << ")";
-					file << "(" << bord->second.X << "," << bord->second.Y << "," << cvec[k][i].borders_color[j].second << ")";
-					file << "]";
-					++j;
-				}
-				//file << "[";
-				//file << "(" << cvec[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f << ")";
-				//file << "(" << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f << ")";
-				//file << "]";
-			}
-			file << std::endl;
-			for (int i = 0; i < cvec[k].size(); ++i) {
-				int j = 0;
-				for (auto bord = cvec[k][i].borders.begin(); bord != cvec[k][i].borders.end(); ++bord) {
-					if (bord->first.X == bord->second.X && bord->first.Y == bord->second.Y) {
-						++j;
-						continue;
-					}
-					if (cvec[k][i].borders_color[j].first != 6) {
-						++j;
-						continue;
-					}
-					file << "[";
-					file << "(" << bord->first.X << "," << bord->first.Y << "," << cvec[k][i].borders_color[j].first << ")";
-					file << "(" << bord->second.X << "," << bord->second.Y << "," << cvec[k][i].borders_color[j].second << ")";
-					file << "]";
-					++j;
-				}
-				//file << "[";
-				//file << "(" << cvec[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f << ")";
-				//file << "(" << cvec[k][i].skeletbone->org->X() << "," << cvec[k][i].skeletbone->org->Y() << "," << cvec[k][i].skeletbone->org->f << ")";
-				//file << "]";
-			}
-			file << std::endl;*/
+		file.close();*/
+		file3.close();
+
 		main2(argc, argv, cvec);
 
 		for (int i = 0; i < sources.size(); ++i)

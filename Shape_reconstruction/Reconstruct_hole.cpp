@@ -220,15 +220,18 @@
 					if (destnode->Sites[j] == orgnode->Sites[i]) {
 						found = true;
 						if (destnode->Sites[j]->isVertex) {
-							Point pp1 = *((Vertex*)orgnode->Sites[i])->p;
+							Point pp1 = Point( ((Vertex*)orgnode->Sites[i])->p->X, ((Vertex*)orgnode->Sites[i])->p->Y);
 
 							Edge* edge = (Edge*)destnode->Sites[j];
-							if (edge->f == (firstH + secondH) / 2.0)
-							{
-								continue;
-							}
+					//		if (edge->f == (firstH + secondH) / 2.0)
+					//		{
+					//			continue;
+					//		}
 							//	continue;
 							newcell.nodes.push_back(pp1);
+							newcell.paired.push_back(false);
+							newcell.color.push_back(edge->f);
+
 							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(orgnode->X(), orgnode->Y())));
 							newcell.borders_color.push_back(std::pair<double, double>(edge->f, orgnode->f));
 							newcell.borders.push_back(std::pair<Point, Point>(pp1, Point(destnode->X(), destnode->Y())));
@@ -250,7 +253,7 @@
 						else {
 							Edge* edge = (Edge*)destnode->Sites[j];
 
-							bool bachangecolor = false;
+							//bool bachangecolor = false;
 
 							//if (orgnode->Disc->Rad == -1 || destnode->Disc->Rad == -1)
 
@@ -259,27 +262,32 @@
 							//                         if (pp1.X == destnode->X() && pp1.Y == destnode->Y())
 							//                             break;
 						
-							if (destnode->Disc->Rad == -1 && edge->Cont->Internal || orgnode->Disc->Rad == -1 && !edge->Cont->Internal) {
+							//if (destnode->Disc->Rad == -1 && edge->Cont->Internal || orgnode->Disc->Rad == -1 && !edge->Cont->Internal) {
 								//continue;
-								edge->f = edge->getNextLooped()->f; // org or dest it is point
-								bachangecolor = true;
-							}
-							if (orgnode->Disc->Rad == -1 && edge->Cont->Internal || destnode->Disc->Rad == -1 && !edge->Cont->Internal) {
+						//		edge->f = edge->getNextLooped()->f; // org or dest it is point
+						//		bachangecolor = true;
+						//	}
+						//	if (orgnode->Disc->Rad == -1 && edge->Cont->Internal || destnode->Disc->Rad == -1 && !edge->Cont->Internal) {
 					//			continue;
-								edge->f = edge->getNextLooped()->f; // org or dest
-								bachangecolor = true;
-							}
+						//		edge->f = edge->getNextLooped()->f; // org or dest
+						//		bachangecolor = true;
+						//	}
 							
 
 							Point pp2 = get_perpendicular_pt_from_pt_to_line(*edge->dest, *edge->org, Point(orgnode->X(), orgnode->Y()));
 
-							newcell.nodes.push_back(pp1);
 							newcell.nodes.push_back(pp2);
+							newcell.nodes.push_back(pp1);
+							newcell.paired.push_back(true);
+							newcell.paired.push_back(true);
+							newcell.color.push_back(edge->f);
+							newcell.color.push_back(edge->f);
+
 							//if ( edge->WestDirect() )
 					//		if (edge->f != secondH && edge->f != 6)
 					//			continue;
-							if (edge->f == (firstH + secondH) / 2.0 && !(orgnode->Disc->Rad == -1) && destnode->Disc->Rad != -1)
-							{
+			//				if (edge->f == (firstH + secondH) / 2.0 && !(orgnode->Disc->Rad == -1) && destnode->Disc->Rad != -1)
+			//				{
 
 								/*int val = -1;
 								int x = pp2.X;
@@ -306,7 +314,7 @@
 								else
 									val = -1;
 								edge->f = val;*/
-								TBone* leftBone = Bone;
+			/*					TBone* leftBone = Bone;
 								TBone* rightBone = Bone;
 
 								while (leftBone->org->Disc->Rad != -1 && rightBone->dest->Disc->Rad != -1)
@@ -330,10 +338,10 @@
 									while (rightedge->f == (firstH + secondH) / 2.0)
 										rightedge = rightedge->getNextLooped();
 									edge->f = rightedge->f;
-
+									s
 								}
 								bachangecolor = true;
-							}
+							}*/
 							//if (edge->f != (firstH+secondH)/2.0)
 							{
 								newcell.borders.push_back(std::pair<Point, Point>(pp2, Point(orgnode->X(), orgnode->Y())));
@@ -379,16 +387,16 @@
 								newcell.bords_color[Borders::Wall].push_back(std::pair<double, double>(edge->f, destnode->f));
 
 							}
-							if (bachangecolor)
-							{
-								edge->f = (firstH + secondH) / 2.0;
-							}
+							//if (bachangecolor)
+							//{
+						//		edge->f = (firstH + secondH) / 2.0;
+						//	}
 
 							newcell.cellels.push_back(destnode->Sites[j]);
-							// 						PaintLine(imageF, &pp1, &pp2, 1);
-							// 						PaintLine(imageF,  edge->dest, edge->org, 1);
-							// 						PaintLine(imageF, &pp2, &Point(orgnode->X(), orgnode->Y()), 1);
-							// 						PaintLine(imageF, &pp1, &Point(destnode->X(), destnode->Y()), 1);
+							 						//PaintLine(imageF, &pp1, &pp2, 0);
+							 						//PaintLine(imageF,  edge->dest, edge->org, 0);
+							 						//PaintLine(imageF, &pp2, &Point(orgnode->X(), orgnode->Y()), 0);
+							 						//PaintLine(imageF, &pp1, &Point(destnode->X(), destnode->Y()), 0);
 						}
 						break;
 					}
@@ -515,8 +523,8 @@
 		int numgrey = 0;
 		while (el) {
 			if (el->isVertex) {
-
-
+				if (el->f == 0.5)
+					std::cout << "HERE!!";
 
 			/*	int x = ((Vertex*)el)->p->X;
 				int y = ((Vertex*)el)->p->Y;
@@ -655,6 +663,8 @@
 			el = Component->HoleList[holen]->Elements[0];//skeleton->Components->first()->Border->Elements[1];
 			while (el) {
 				if (el->isVertex) {
+					if (el->f == 0.5)
+						std::cout << "HERE!!";
 					if (sPoints2.find(*((Vertex*)el)->p) != sPoints2.end())
 						if (sPoints1.find(*((Vertex*)el)->p) != sPoints1.end())
 							el->f = (secondH + firstH) / 2.0;
@@ -723,6 +733,89 @@
 			++holen;
 		}
 	}
+	void Reconstruct::SetHeightforBorders2(TConnected* Component, std::set<Point>& sPoints2, int firstH_, int secondH_, double curcolor) {
+		firstH = firstH_;
+		secondH = secondH_;
+		//Element* el = Component->Border->Elements[0];//Points
+		//double curcolor = secondH;//firstH;//tmp
+		//int numgrey = 0;
+		Element* el = Component->Border->Elements[0];//fter only vertices
+		while (el) {
+			if (!el->isVertex)
+			{
+				el = el->getNext();
+				continue;
+			}
+			if (sPoints2.find(Point( ((Vertex*)el)->p->X, ((Vertex*)el)->p->Y )) != sPoints2.end())
+			{
+				el->f = (firstH + secondH) / 2.0;
+				curcolor = (firstH + secondH) - curcolor;
+			}
+			else {
+				el->f = curcolor;
+			}
+			el = el->getNext();
+		}
+
+		el = Component->Border->Elements[1];
+		while (el) {
+			if (el->isVertex) {
+				el = el->getNext();
+				continue;
+			}
+			el->f = el->getPrevLooped()->f;
+			
+			if (el->getNextLooped()->f*1.0 == (firstH + secondH) / 2.0) {
+				el->f = el->getPrevLooped()->f;
+			}
+			else if (el->getPrevLooped()->f*1.0 == (firstH + secondH) / 2.0) {
+					el->f = el->getNextLooped()->f;
+				}
+			
+			el = el->getNext();
+		}
+
+		//while wothout holes
+		int holen = 0;
+		curcolor = (firstH + secondH) - curcolor;
+		while (Component->HoleList.size() > holen) {
+			el = Component->HoleList[holen]->Elements[0];
+			while (el) {
+				if (!el->isVertex)
+				{
+					el = el->getNext();
+					continue;
+				}
+				if (sPoints2.find(*((Vertex*)el)->p) != sPoints2.end())
+				{
+					el->f = (firstH + secondH) / 2.0;
+					curcolor = (firstH + secondH) - curcolor;
+				}
+				else {
+					el->f = curcolor;
+				}
+				el = el->getNext();
+			}
+			el = Component->HoleList[holen]->Elements[1];
+			while (el) {
+				if (el->isVertex) {
+					el = el->getNext();
+					continue;
+				}
+				el->f = el->getPrevLooped()->f;
+
+				if (el->getNextLooped()->f*1.0 == (firstH + secondH) / 2.0) {
+					el->f = el->getPrevLooped()->f;
+				}
+				else if (el->getPrevLooped()->f*1.0 == (firstH + secondH) / 2.0) {
+					el->f = el->getNextLooped()->f;
+				}
+
+				el = el->getNext();
+			}
+			++holen;
+		}
+	}
 
 	Reconstruct::Reconstruct(CImage im, int col1, int col2)
 		: image(im)//, firstH(col1), secondH(col2)
@@ -738,6 +831,9 @@
 		//imageF = std::vector<std::vector<doub>>(image.GetWidth(), std::vector<int>(image.GetHeight()));
 	}
 
+	Reconstruct::Reconstruct() 
+	{	}
+
 	Reconstruct::~Reconstruct()
 	{
 	}
@@ -750,10 +846,10 @@
 			for (int i = 0; i < 3/*Node->Kind()*/; ++i) {
 				if (!Node->Sites[i])
 					break;
-				if (Node->Sites[i]->f == firstH/*Cont->Internal*/ && !Node->Sites[i]->Cont->Internal ) {
+				if (Node->Sites[i]->f == firstH/*Cont->Internal*//* && !Node->Sites[i]->Cont->Internal*/ ) {
 					sumint++;
 				}
-				else if (Node->Sites[i]->f == secondH && !Node->Sites[i]->Cont->Internal) {
+				else if (Node->Sites[i]->f == secondH/* && !Node->Sites[i]->Cont->Internal*/) {
 					sumnotint++;
 				}
 				else
@@ -766,7 +862,7 @@
 			int r = secondH;
 			if (sumint != 0 && sumnotint != 0) {//(sumint != 0 && sumnotint != 0){//(sumint%2 == 1){
 				Node->f = (l + r) / 2.0;
-				imageF[Node->Disc->X][Node->Disc->Y] = Node->f;
+				//imageF[Node->Disc->X][Node->Disc->Y] = Node->f;
 			}
 			Node = Node->getNext();
 		}
@@ -790,7 +886,7 @@
 			if (val < 0)
 				std::cout << "Kosyak";
 			nextNode->f = Node->f * (d2 / (d2 + d1)) + val/*nearest*/ *(d1 / (d1 + d2));
-			imageF[int(nextNode->X())][int(nextNode->Y())] = nextNode->f;
+			//imageF[int(nextNode->X())][int(nextNode->Y())] = nextNode->f;
 			SetOuterPointsofSkelet(nextNode, imageF);
 		}
 	}
@@ -1020,7 +1116,7 @@
 			  }*/
 			  //         //RePaintSkeletBones(skeleton, imageF);
 
-			       PaintInFile(imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\after_cur_out_0.png"));
+			       //PaintInFile(imageF, _T("C:\\Users\\Alexandra\\My\\Shape_reconstruction\\data\\after_cur_out_0.png"));
 		return 0;
 	}
 //}

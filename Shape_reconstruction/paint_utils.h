@@ -36,55 +36,61 @@ static void PaintLine(std::vector<std::vector<double>>& imageF, Point* Node, Poi
 
 static void PaintSkeletBones(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF, bool onlywhite){
     //TNode * Node = skeleton->Components->first()->Nodes->first();
-    TBone* Bone = skeleton->Components->first()->Bones->first();
-    while (Bone){    
-        //TBone* Bone = Node->Bones[i];
-        TNode* Node = Bone->dest;
-        TNode* nextNode = Bone->org;//GetNextNode(Node);
-        line m;
-        m.a = Node->Y() - nextNode->Y();
-        m.b = nextNode->X() - Node->X();
-        m.c = -m.a*Node->X() - m.b*Node->Y();
-        double d1, d2;
-        Point res;
-        if (fabs(m.b) > fabs(m.a)){
-            for (int x = min(Node->X(), nextNode->X()); x < max(Node->X(), nextNode->X()); ++x){
-                int y;
-                y = (-m.a*x-m.c)/m.b;
-                if (m.b == 0)
-                    y = Node->Y();
-                res.X = x;
-                res.Y = y;
-                if (Bone->Virt)
-                    FindParabolaPoint(Bone, x, y, res);
-                d1 = DistPoint(&res, &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
-                d2 = DistPoint(&res, &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
-				if (onlywhite)
-					imageF[res.X][res.Y] = 1;// Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;    
-				else
-					imageF[res.X][res.Y] = Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ; 
-            }
-        } else {
-            for (int y = min(Node->Y(), nextNode->Y()); y < max(Node->Y(), nextNode->Y()); ++y){
-                int x = (-m.b*y-m.c)/m.a;
-                if (m.a == 0)
-                    x = Node->X();
-                res.X = x;
-                res.Y = y;
-                if (Bone->Virt)
-                    FindParabolaPoint(Bone, x, y, res);
-                d1 = DistPoint(&res, &Point(Node->Disc->X,Node->Disc->Y));//&bone->dest);
-                d2 = DistPoint(&res, &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
-				if (onlywhite)
-					imageF[res.X][res.Y] = 1;
-				else
-					imageF[res.X][res.Y] = Node->f * (d2 / (d1 + d2)) + nextNode->f * (d1 / (d1 + d2));
-            }
-        }
-		//imageF[Node->X()][Node->Y()] = 0.5;
-		//imageF[nextNode->X()][nextNode->Y()] = 0.5;
-        Bone = Bone->getNext();
-    }
+	TConnected* Comp = skeleton->Components->first();
+	while (Comp)
+	{
+		TBone* Bone = Comp->Bones->first();
+		while (Bone) {
+			//TBone* Bone = Node->Bones[i];
+			TNode* Node = Bone->dest;
+			TNode* nextNode = Bone->org;//GetNextNode(Node);
+			line m;
+			m.a = Node->Y() - nextNode->Y();
+			m.b = nextNode->X() - Node->X();
+			m.c = -m.a*Node->X() - m.b*Node->Y();
+			double d1, d2;
+			Point res;
+			if (fabs(m.b) > fabs(m.a)) {
+				for (int x = min(Node->X(), nextNode->X()); x < max(Node->X(), nextNode->X()); ++x) {
+					int y;
+					y = (-m.a*x - m.c) / m.b;
+					if (m.b == 0)
+						y = Node->Y();
+					res.X = x;
+					res.Y = y;
+					if (Bone->Virt)
+						FindParabolaPoint(Bone, x, y, res);
+					d1 = DistPoint(&res, &Point(Node->Disc->X, Node->Disc->Y));//&bone->dest);
+					d2 = DistPoint(&res, &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
+					if (onlywhite)
+						imageF[res.X][res.Y] = 1;// Node->f * (d2/(d1+d2)) + nextNode->f * (d1/(d1+d2)) ;    
+					else
+						imageF[res.X][res.Y] = Node->f * (d2 / (d1 + d2)) + nextNode->f * (d1 / (d1 + d2));
+				}
+			}
+			else {
+				for (int y = min(Node->Y(), nextNode->Y()); y < max(Node->Y(), nextNode->Y()); ++y) {
+					int x = (-m.b*y - m.c) / m.a;
+					if (m.a == 0)
+						x = Node->X();
+					res.X = x;
+					res.Y = y;
+					if (Bone->Virt)
+						FindParabolaPoint(Bone, x, y, res);
+					d1 = DistPoint(&res, &Point(Node->Disc->X, Node->Disc->Y));//&bone->dest);
+					d2 = DistPoint(&res, &Point(nextNode->Disc->X, nextNode->Disc->Y));//&bone->org);
+					if (onlywhite)
+						imageF[res.X][res.Y] = 1;
+					else
+						imageF[res.X][res.Y] = Node->f * (d2 / (d1 + d2)) + nextNode->f * (d1 / (d1 + d2));
+				}
+			}
+			//imageF[Node->X()][Node->Y()] = 0.5;
+			//imageF[nextNode->X()][nextNode->Y()] = 0.5;
+			Bone = Bone->getNext();
+		}
+		Comp = Comp->getNext();
+	}
 }
 
 static void PaintBorders(TPolFigure*skeleton,std::vector<std::vector<double>>& imageF, double color = 1.0){

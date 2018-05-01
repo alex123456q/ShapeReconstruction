@@ -12,7 +12,7 @@ std::vector<std::vector<Cell>> cellstopaint;
 float angle = -0.0133;// 0.0;
 // координаты вектора направления движения камеры
 float lx = 0.0133/*0*/ , lz = -1/*-1*/;
-float scaleValue = 0.86f;//0.36f;//0.34//0.36f;//0.46f;//0.56f;//0.15f;
+float scaleValue = 0.36f;//0.54f;//0.86f;//0.36f;//0.34//0.36f;//0.46f;//0.56f;//0.15f;
 // XZ позиция камеры
 float x = 70.0f, z = 205.0f; // 40.0f, z = 205.0f;
 //Ключи статуса камеры. Переменные инициализируются нулевыми значениями
@@ -337,8 +337,8 @@ void display() {
 	 //gluLookAt(50, 8, 225, 51, 2, 150, 0, 1, 0);  // Определяет вид и положение камеры
 
 
-	gluLookAt(x, 40.0f, z,                    //0.8 1   //30  10
-		x + lx*75, 30.0f, z + lz*75,                    //20  5
+	gluLookAt(x, 40.0f, z,                    //0.8 1   //30  10  40
+		x + lx*75, 30.0f, z + lz*75,                    //20  5 30
 		0.0f, 1.0f, 0.0f);
 
     glScalef(scaleValue, scaleValue * HEIGHT_RATIO, scaleValue);

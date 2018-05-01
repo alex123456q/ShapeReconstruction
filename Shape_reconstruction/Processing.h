@@ -82,6 +82,8 @@ struct Cell{
     TNode* skeletnode;
     TBone* skeletbone;
     vector<Point> nodes;
+	std::vector<bool> paired;
+	std::vector<double> color;
     std::/*unordered_*//*set*/vector<std::pair<Point, Point>/*, point_compare*/> borders;
 	std::vector<std::pair<double, double> > borders_color;
 
@@ -121,6 +123,7 @@ public:
 	std::vector<int> partpointsvert;
 	vector<Cell> cells;
     Reconstruct(CImage im, int col1, int col2);
+	Reconstruct();
     ~Reconstruct();
     void makeSkelet(/*CImage im, TPolFigure *skeletonb*/);
     void makeCells(TConnected* Component);
@@ -131,6 +134,7 @@ public:
 	int vertPart(CImage imVert, std::vector<Point>& cvpoints);
     void SetInnerPointsofSkelet(TConnected* Component);
 	void SetHeightforBorders(TConnected* Component, std::set<Point>& sPoints, std::set<Point>& sPointsEdge, int firstH, int secondH);
+	void SetHeightforBorders2(TConnected* Component, std::set<Point>& sPoints2, int firstH_, int secondH_, double curcolor);
     void findClosestBorder(Cell& curcell, int i, int j, double&x, double&y, double& d1, double& f, std::vector<std::vector<double>>& imageF);
     void findClosestBone(Cell& curcell, int i, int j, double x, double y, double& x2, double& y2, double& d3, double& f, std::vector<std::vector<double>>& imageF);
 };
