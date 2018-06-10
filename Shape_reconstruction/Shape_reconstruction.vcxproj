@@ -167,8 +167,9 @@
     <ClCompile Include="Source3.cpp" />
     <ClCompile Include="Source4.cpp" />
     <ClCompile Include="Source5.cpp" />
+    <ClCompile Include="MiniMain.cpp" />
+    <ClCompile Include="CurMain.cpp" />
     <ClCompile Include="Source6.cpp" />
-    <ClCompile Include="Source7.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geom_utils.h" />

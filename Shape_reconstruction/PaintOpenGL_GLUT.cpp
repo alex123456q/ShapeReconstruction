@@ -6,6 +6,13 @@
 
 //std::vector<std::vector<double>> imagetopaint;
 std::vector<std::vector<Cell>> cellstopaint;
+BOOL light;      // Свет ВКЛ / ВЫКЛ
+BOOL lp;         // L нажата?
+BOOL fp;         // F нажата?
+GLfloat LightAmbient[] = { 0.5f, 0.5f, 0.5f, 1.0f }; // Значения фонового света ( НОВОЕ )
+GLfloat LightDiffuse[] = { 0.7f, 0.7f, 0.7f, 0.7f }; // Значения диффузного света ( НОВОЕ )
+GLfloat LightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };     // Позиция света ( НОВОЕ )
+
 // float angle = 0.0f;
 // float lx = 0, ly = 0;
 // угол поворота камеры
@@ -159,16 +166,51 @@ int xOrigin = -1;
 // 	return 0;
 //}
 //}
+
+void CalculateSurfaceNormal(std::vector<double>& p1, std::vector<double>&p2, std::vector<double>& p3, std::vector<float>& n)
+{
+	n.resize(3);
+	std::fill(n.begin(), n.end(), 0);
+	std::vector<float> u(3), v(3);
+	for (int i = 0; i < 3; ++i)
+	{
+		//U = p2 - p1 and the vector V = p3 - p1
+		u[i] = p2[i] - p1[i];
+		v[i] = p3[i] - p1[i];
+	}
+	//Nx = UyVz - UzVy
+	//Ny = UzVx - UxVz
+    //Nz = UxVy - UyVx
+	n[0] = u[1] * v[2] - u[2] * v[1];
+	n[1] = u[2] * v[0] - u[0] * v[2];
+	n[2] = u[0] * v[1] - u[1] * v[0];
+	float nn = sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+	n[0] /= nn;
+	n[1] /= nn;
+	n[2] /= nn;
+}
+
 /* Global variables */
 char title[] = "3D Shapes";
 const float HEIGHT_COEF = 7;
 /* Initialize OpenGL Graphics */
 void initGL() {
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background color to black and opaque 0 0 0 0
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Set background color to black and opaque 0 0 0 0
 	glClearDepth(1.0f);                   // Set background depth to farthest
 	glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
 	glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
 	glShadeModel(GL_SMOOTH);   // Enable smooth shading
+								//	glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+							   // 		glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
+							   // 		glShadeModel(GL_SMOOTH);   // Enable smooth shading
+								//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);    // Установка Фонового Света
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);    // Установка Диффузного Света
+	glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);   // Позиция света
+
+	glEnable(GL_LIGHT1); // Разрешение источника света номер один
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
 }
 
@@ -191,33 +233,118 @@ void RenderingHeightMapLines(std::vector<std::vector<Cell>>& allcells/*, std::ve
 			//auto cellborder = cells[i].bordersNodes.begin();
 			//std::cout << " border size : " << cells[i].bordersNodes.size() <<  " " << cells[i].borders.size() << std::endl;
 			int j = 0;
-			for (auto bord = allcells[k][i].borders.begin(); bord != allcells[k][i].borders.end(); ++bord) {
-				glBegin(GL_LINES); // Линии
-				glColor3f(0.0f, 0.0f, 0.0f);
+			//			for (auto bord = allcells[k][i].borders.begin(); bord != allcells[k][i].borders.end(); ++bord) {
+			//				glBegin(GL_LINES); // Линии
+			//				glColor3f(0.0f, 0.0f, 0.0f);
 
-				//if (!allcells[k][i].skeletboneex) 
-				//	glColor3f(1.0f, 0.0f, 0.0f);
-				//if (fabs(imageF[int(bord->first.X)][int(bord->first.Y)]) <1e-3)
-				//	glColor3f(1.0f, 0.7f, 0.7f);
-				glVertex3f(bord->first.X, allcells[k][i].borders_color[j].first * HEIGHT_COEF /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
-				glColor3f(0.0f, 0.0f, 0.0f);
-				//if (!allcells[k][i].skeletboneex)
-				//	glColor3f(1.0f, 0.0f, 0.0f);
-				//if (fabs(imageF[int(bord->second.X)][int(bord->second.Y)]) <1e-3)
-				//	glColor3f(1.0f, 0.7f, 0.7f);
-				glVertex3f(bord->second.X, allcells[k][i].borders_color[j].second * HEIGHT_COEF/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
-				glEnd();;
-				++j;
-				//++cellborder;
+							//if (!allcells[k][i].skeletboneex) 
+							//	glColor3f(1.0f, 0.0f, 0.0f);
+							//if (fabs(imageF[int(bord->first.X)][int(bord->first.Y)]) <1e-3)
+							//	glColor3f(1.0f, 0.7f, 0.7f);
+			//				glVertex3f(bord->first.X, allcells[k][i].borders_color[j].first * HEIGHT_COEF /*imageF[int(bord->first.X)][int(bord->first.Y)]*7*/, bord->first.Y);
+			//				glColor3f(0.0f, 0.0f, 0.0f);
+							//if (!allcells[k][i].skeletboneex)
+							//	glColor3f(1.0f, 0.0f, 0.0f);
+							//if (fabs(imageF[int(bord->second.X)][int(bord->second.Y)]) <1e-3)
+							//	glColor3f(1.0f, 0.7f, 0.7f);
+			//				glVertex3f(bord->second.X, allcells[k][i].borders_color[j].second * HEIGHT_COEF/*imageF[int(bord->second.X)][int(bord->second.Y)]*7*/, bord->second.Y);
+			//				glEnd();;
+			//				++j;
+							//++cellborder;
+			glColor3f(0.4f, 0.4f, 0.4f);
+			//glColor3f(0.0f, 0.0f, 0.0f);
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL/*GL_LINE*//*GL_FILL*/); // см. выше
+			glBegin(GL_POLYGON);
+			{
+				std::vector<float> n;
+				std::vector<double> p1 = { allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y() },
+					p2 = { allcells[k][i].nodes[0].X, allcells[k][i].color[0] * HEIGHT_COEF, allcells[k][i].nodes[0].Y },
+					p3 = { allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y() };
+				if (allcells[k][i].compi %2 != 0)
+					CalculateSurfaceNormal(p1, p2, p3, n);
+				else
+					CalculateSurfaceNormal(p3, p2, p1, n);
+
+				glNormal3f(n[0], n[1], n[2]);
 			}
+			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			glVertex3f(allcells[k][i].nodes[0].X, allcells[k][i].color[0] * HEIGHT_COEF, allcells[k][i].nodes[0].Y);
+
+			int curi = 1;
+			if (allcells[k][i].paired[0])
+			{
+				glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+				++curi;
+			}
+			//glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+			glEnd();
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL/*GL_LINE*//*GL_FILL*/); // см. выше
+			glBegin(GL_POLYGON);
+			//glColor3f(0.0f, 0.0f, 0.0f);
+			std::vector<float> n;
+			std::vector<double> p1 = { allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y() },
+				p2 = { allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][curi].nodes[0].Y },
+				p3 = { allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y() };
+			if (allcells[k][i].compi % 2 != 0)
+				CalculateSurfaceNormal(p1, p2, p3, n);
+			else
+				CalculateSurfaceNormal(p3, p2, p1, n);
+			glNormal3f(n[0], n[1], n[2]);
+
+			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+			if (allcells[k][i].paired[curi])
+			{
+				++curi;
+				glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+				--curi;
+			}
+			glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			glEnd();
+			//file << allcells[k][i].skeletbone->dest->X() << "," << cvec[k][i].skeletbone->dest->Y() << "," << cvec[k][i].skeletbone->dest->f * 10 << std::endl;
+
 			glColor3f(0.0f, 1.0f, 0.0f);
 			glBegin(GL_LINES); // Линии
+			glColor3f(0.0f, 1.0f, 0.0f);
 			//if (allcells[k][i].skeletboneex) {
-				glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
-				glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
 			//}
 			glEnd();
+
+			/*glColor3f(0.0f, 0.0f, 0.0f);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // см. выше
+			glBegin(GL_POLYGON);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			glVertex3f(allcells[k][i].nodes[0].X, allcells[k][i].color[0] * HEIGHT_COEF, allcells[k][i].nodes[0].Y);
+
+			curi = 1;
+			if (allcells[k][i].paired[0])
+			{
+				glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+				++curi;
+			}
+			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+			glEnd();
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // см. выше
+			glBegin(GL_POLYGON);
+			glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+			if (allcells[k][i].paired[curi])
+			{
+				++curi;
+				glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+				--curi;
+			}
+			glVertex3f(allcells[k][i].nodes[curi].X, allcells[k][i].color[curi] * HEIGHT_COEF, allcells[k][i].nodes[curi].Y);
+			glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			glEnd();*/
 		}
+		//}
 // 		for (int j = 0; j < cells[i].nodes.size()+1; ++j) {
 // 			double x = cells[i].nodes[j%cells[i].nodes.size()].X;
 // 			double y = cells[i].nodes[j%cells[i].nodes.size()].Y;
@@ -347,6 +474,7 @@ void display() {
 	RenderingHeightMapLines(cellstopaint/*, imagetopaint*/);
 
 	glutSwapBuffers();  // Swap the front and back frame buffers (double buffering)
+	glEnable(GL_LIGHTING);
 }
 void processNormalKeys(unsigned char key, int xx, int yy) {
 

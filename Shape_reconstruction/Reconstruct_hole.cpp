@@ -204,10 +204,12 @@
 	}
 
 	void Reconstruct::makeCells(TConnected* Component) {
+		static int compi = 0;
 		TBone* Bone = Component->Bones->first();
 		while (Bone) {
 			Cell newcell = Cell();
 			newcell.skeletbone = Bone;
+			newcell.compi = compi;
 			TNode* orgnode = Bone->org;
 			TNode* destnode = Bone->dest;
 			bool found = false;
@@ -428,6 +430,8 @@
 			//if (z == 64)18
 			//		break;
 		}
+		compi++;
+
 	}
 
 	void Reconstruct::makeSkelet(/*CImage image, TPolFigure* skelet*/) {

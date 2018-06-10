@@ -1,6 +1,6 @@
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+//#include <boost/filesystem.hpp>
+//namespace fs = boost::filesystem;
 #include "atlimage.h"
 #include "Processing.h"
 #include <fstream>
@@ -40,17 +40,26 @@ namespace
 }
 
 
+//std::vector<Cell> main21(cv::Mat& source1, /*CImage*/cv::Mat& source2, int firstH_, int secondH_, std::vector<Point> cPoint)
 std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int secondH_, std::vector<Point> cPoint)
+
 {
-	CImage source, sourceboth, edge1, edge2, edge;
+	//CImage source, sourceboth, edge1, edge2, edge;
 	int firstH = firstH_, secondH = secondH_;
 
 	int width = min(source1.GetWidth(), source2.GetWidth()), height = min(source1.GetHeight(), source2.GetHeight());
-
+	//int width = min(source1.dims, source2.rowRange), height = min(source1.colRange, source2.colRange);
 	BitRaster* srcim1 = new BitRaster(width, height);
 	BitRaster* srcim2 = new BitRaster(width, height);
 
 	int t = clock();
+
+	//vector<vector<Point> > contours;
+	//int thresh = 10;
+	//cv::Canny(source1, source1, thresh, thresh * 2, 3);
+	//vector<cv::Vec4i> hierarchy;
+	//cv::findContours(source1, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+	//cv::findContours(source1, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
 	std::vector<std::vector<int>> imcolors(width);
 	int sq1 = 0, sq2 = 0;
@@ -83,8 +92,24 @@ std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int seco
 		//	"MULTIPOLYGON(((27 125,28 119,29 116,32 110,34 107,42 99,45 97,51 94,54 93,60 92,68 92,73 93,77 94,85 98,95 108,99 116,100 119,101 124,101 134,100 139,99 142,95 150,85 160,77 164,74 165,69 166,59 166,54 165,51 164,43 160,33 150,29 142,28 139,27 133, 27 125)),((140 126,141 122,143 116,145 112,147 109,151 104,156 100,159 98,163 96,169 94,173 93,184 93,188 94,194 96,200 99,206 104,211 110,214 116,216 122,217 126,217 137,215 145,211 153,207 158,205 160,200 164,192 168,184 170,173 170,169 169,163 167,157 164,151 159,146 153,143 147,141 141,140 137, 140 126)))", blue);
 //		"MULTIPOLYGON(((47 79,48 75,50 71,53 67,57 64,61 62,64 61,72 61,75 62,79 64,83 67,86 71,88 75,89 79,89 88,88 91,86 95,83 99,82 100,79 102,75 104,72 105,64 105,61 104,57 102,53 99,50 95,48 91,47 87, 47 79)),((129 89,131 85,135 81,139 79,145 79,148 80,152 83,154 86,155 89,155 95,154 98,152 101,151 102,148 104,145 105,139 105,136 104,133 102,130 98,129 95, 129 89)),((118 154,119 149,120 146,122 142,124 139,131 132,136 129,138 128,146 126,155 126,163 128,165 129,170 132,177 139,179 142,181 146,182 149,183 153,183 163,182 167,181 170,178 176,170 184,167 186,163 188,160 189,155 190,146 190,138 188,134 186,131 184,123 176,120 170,119 167,118 162, 118 154)),((57 146,58 143,59 141,64 136,66 135,70 134,76 134,80 135,82 136,87 141,88 143,89 146,89 151,88 154,87 156,82 161,80 162,77 163,69 163,66 162,64 161,59 156,58 154,57 151, 57 146)))"
 //		, blue);
+	/*blue.resize(contours.size());
+	for (int i = 0; i < contours.size(); i++)
+	{
+		for (int j = 0; j < contours[i].size(); ++j)
+			boost::geometry::append(blue[i].outer(), point2d(contours[i][j].X, contours[i][j].Y));
+		boost::geometry::append(blue[i].outer(), point2d(contours[i][0].X, contours[i][0].Y));
+	}
 
-
+	contours.clear();
+	cv::Canny(source2, source2, thresh, thresh * 2, 3);
+	cv::findContours(source2, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	green.resize(contours.size());
+	for (int i = 0; i < contours.size(); i++)
+	{
+		for (int j = 0; j < contours[i].size(); ++j)
+			boost::geometry::append(green[i].outer(), point2d(contours[i][j].X, contours[i][j].Y));
+		boost::geometry::append(green[i].outer(), point2d(contours[i][0].X, contours[i][0].Y));
+	}*/
 	{
 		TConnected* Component1 = fig1->Components->first();            //if connected fig2
 		blue.resize(fig1->Components->cardinal());
@@ -96,8 +121,8 @@ std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int seco
 			while (itersecond) {
 				boost::geometry::append(blue[i].outer(), point2d(itersecond->X, itersecond->Y));
 				//curpoly.push_back(point2d(itersecond->X, itersecond->Y) );
-				//file3 << itersecond->X << "," << itersecond->Y << "," << secondH_ << std::endl;
-				//file3 << itersecond->X << " " << itersecond->Y << ",";
+	//			file3 << itersecond->X << "," << itersecond->Y << "," << secondH_ << std::endl;
+				//file3 << itersecond->X << " " << itersecond->Y << " 0" << std::endl;
 				itersecond = itersecond->getNext();
 			}
 			boost::geometry::append(blue[i].outer(), point2d(Component1->Border->ListPoints->first()->X, Component1->Border->ListPoints->first()->Y));
@@ -180,6 +205,7 @@ std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int seco
 
 
 	TConnected* Component = rec.skeleton->Components->first();
+	int Comp = 0;
 	while (Component) {
 	/*	int curcolor = -1;
 		bool converted = false;
@@ -214,13 +240,20 @@ std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int seco
 		double y = ((Vertex*)Component->Border->Elements[0])->p->Y;
 		bool inblue = boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), blue);
 		bool ingreen = boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), green);
-		if (inblue )//&& !boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), green) )//|| boost::geometry::within(boost::geometry::model::d2::point_xy<double>(x, y), blue))            //green big floor   within
+		if (inblue && !ingreen )//&& !boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), green) )//|| boost::geometry::within(boost::geometry::model::d2::point_xy<double>(x, y), blue))            //green big floor   within
 			rec.SetHeightforBorders2(Component, Points, firstH, secondH, firstH);
-		else if ( ingreen )//&& !boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), blue) )//|| boost::geometry::within(boost::geometry::model::d2::point_xy<double>(x, y), green))
+		else if ( ingreen && !inblue )//&& !boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), blue) )//|| boost::geometry::within(boost::geometry::model::d2::point_xy<double>(x, y), green))
 			rec.SetHeightforBorders2(Component, Points, firstH, secondH, secondH);
 		else
 		{
-			double x = ((Vertex*)Component->Border->Elements[1])->p->X;
+			if ( Comp % 2)
+				rec.SetHeightforBorders2(Component, Points, firstH, secondH, firstH);
+			else
+				rec.SetHeightforBorders2(Component, Points, firstH, secondH, secondH);
+
+			//rec.SetHeightforBorders2(Component, Points, firstH, secondH, secondH);
+			//rec.SetHeightforBorders2(Component, Points, firstH, secondH, (firstH + secondH)/2.0);
+			/*double x = ((Vertex*)Component->Border->Elements[1])->p->X;
 			double y = ((Vertex*)Component->Border->Elements[1])->p->Y;
 			if (boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), blue) )//&& !boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), green))            //green big floor   within
 				rec.SetHeightforBorders2(Component, Points, firstH, secondH, firstH);
@@ -235,8 +268,9 @@ std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int seco
 				else if (boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), green) )//&& !boost::geometry::covered_by(boost::geometry::model::d2::point_xy<double>(x, y), blue))
 					rec.SetHeightforBorders2(Component, Points, firstH, secondH, secondH);
 				else				rec.SetHeightforBorders2(Component, Points, firstH, secondH, secondH); //std::cout << "beda";
-			}
+			}*/
 		}
+		++Comp;
 		Component = Component->getNext();
 	}
 
@@ -250,9 +284,10 @@ std::vector<Cell> main21(CImage& source1, CImage& source2, int firstH_, int seco
 	return rec.cells;
 }
 
-int main7(int argc, char *argv[]) {
-	
+int main(int argc, char *argv[]) {
+//	std::vector<std::pair<cv::Mat/*CImage*/, int> > sources;
 	std::vector<std::pair<CImage, int> > sources;
+
 	std::ifstream fin("C:/Users/Alexandra/My/Shape_reconstruction/data/slices.txt"); //yesno.txt   slices.txt
 	std::string path;
 	fin >> path;
@@ -264,6 +299,7 @@ int main7(int argc, char *argv[]) {
 		std::string name;
 		int height;
 		fin >> name >> height;
+		//sources[i].first = cv::imread((path + name).c_str(), CV_LOAD_IMAGE_GRAYSCALE);//
 		sources[i].first.Load((path + name).c_str());
 		//sources[i].first = cv::imread( (path + name).c_str());
 		sources[i].second = height;
@@ -274,7 +310,7 @@ int main7(int argc, char *argv[]) {
 
 	std::vector<std::vector<Cell>> cvec;
 	std::vector<Point> cpoint;
-	file3.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid_more.txt", ios::out | ios::app);//*/
+	file3.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid_pyth3.txt", ios::out | ios::app);//*/ Grid_more
 	for (int i = 0; i < sources.size() - 1; ++i)
 	{
 		//if success - better to divide
@@ -285,16 +321,44 @@ int main7(int argc, char *argv[]) {
 																														  //	contours_matching(cvec[i-1], cvec[i], sources[i].second);
 																														  //cpoint = calc_upper_border(cvec[i], sources[i+1].second);
 	}
-
 	
 	file3.close();
 
-	main2(argc, argv, cvec);
+	ofstream file5, file6;
+	file5.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid_pyth4.txt");
+	//file6.open("C:/Users/Alexandra/My/Shape_reconstruction/data/Grid_pyth5.txt");
 
-	for (int i = 0; i < sources.size(); ++i)
-	{
-		sources[i].first.Destroy();
+	for (int k = 0; k < cvec.size(); ++k) {
+		for (int i = 0; i < cvec[k].size(); ++i) {
+			int j = 0;
+			/*for (int j = 0; j < cvec[k][i].bords[Borders::Wall].size(); ++j)
+			{
+				file5 << cvec[k][i].bords[Borders::Wall][j].first.X << " " << cvec[k][i].bords_color[Borders::Wall][j].first << " " << cvec[k][i].bords[Borders::Wall][j].first.Y << " ";
+				file5 << cvec[k][i].bords[Borders::Wall][j].second.X << " " << cvec[k][i].bords_color[Borders::Wall][j].second << " " << cvec[k][i].bords[Borders::Wall][j].second.Y << std::endl;
+
+				file6 << cvec[k][i].bords[Borders::Floor][j].first.X << " " << cvec[k][i].bords_color[Borders::Floor][j].first << " " << cvec[k][i].bords[Borders::Floor][j].first.Y << " ";
+				file6 << cvec[k][i].bords[Borders::Floor][j].second.X << " " << cvec[k][i].bords_color[Borders::Floor][j].second << " " << cvec[k][i].bords[Borders::Floor][j].second.Y << std::endl;
+			}*/
+			for (auto bord = cvec[k][i].borders.begin(); bord != cvec[k][i].borders.end(); ++bord) {
+
+				file5 << bord->first.X << " " << cvec[k][i].borders_color[j].first << " " << bord->first.Y << " ";
+				file5 << bord->second.X << " " << cvec[k][i].borders_color[j].second << " " << bord->second.Y << std::endl;
+				++j;
+				//glVertex3f(allcells[k][i].skeletbone->dest->X(), allcells[k][i].skeletbone->dest->f * HEIGHT_COEF, allcells[k][i].skeletbone->dest->Y());
+				//glVertex3f(allcells[k][i].skeletbone->org->X(), allcells[k][i].skeletbone->org->f * HEIGHT_COEF, allcells[k][i].skeletbone->org->Y());
+			}
+		}
 	}
+	//file6.close();
+	file5.close();
+
+
+	//main2(argc, argv, cvec);
+
+	//for (int i = 0; i < sources.size(); ++i)
+	//{
+	//	sources[i].first.Destroy();
+	//}
 
 	return 0;
 }

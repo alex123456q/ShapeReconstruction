@@ -91,6 +91,7 @@ struct Cell{
 	std::map<Borders, std::vector<std::pair<double, double> >> bords_color;
 
 	bool skeletboneex;
+	int compi;
     vector<Element*> cellels;
 	Cell()
 	{
